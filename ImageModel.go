@@ -155,9 +155,17 @@ func (m *ImageModel) RefreshURLs() {
 // FindOne - Find one Image record by id
 func ImageFindOne(id string, record *ImageModel) error {
 	db := catu.GetDefaultDatabaseConnection()
-	return db.
-		Where("id = ? OR name = ?", id, id).
-		First(&record).Error
+
+	n, err := strconv.ParseInt(id, 10, 64)
+	if err == nil || n == 0 {
+		return db.
+			Where("name = ?", id).
+			First(record).Error
+	} else {
+		return db.
+			Where("id = ? OR name = ?", id, id).
+			First(record).Error
+	}
 }
 
 // Query / findMany image records

@@ -1,7 +1,6 @@
 package files
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"path"
@@ -11,7 +10,6 @@ import (
 	"github.com/go-catupiry/catu"
 	files_helpers "github.com/go-catupiry/files/helpers"
 	files_processor "github.com/go-catupiry/files/processor"
-	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
@@ -236,29 +234,9 @@ func (ctl *ImageController) FindOne(c echo.Context) error {
 		}
 
 		if shouldReset {
-			originalURL := record.URLs["original"]
+			url := record.URLs["original"]
 			originalPath := path.Join(os.TempDir(), record.Name) + "_original"
 			defer os.Remove(originalPath)
-
-			httpClient := resty.New()
-			res, err := httpClient.R().
-				SetOutput(originalPath).
-				Get(originalURL)
-
-			// execution error
-			if err != nil {
-				return errors.Wrap(err, "error on download original image")
-			}
-			// http error
-			if res.IsError() {
-				logrus.WithFields(logrus.Fields{
-					"error":  fmt.Sprintf("%+v\n", err),
-					"status": res.StatusCode(),
-					"bory":   res.String(),
-				}).Error("Response error", err)
-
-				return errors.New(res.String())
-			}
 
 			ctx := c.(*catu.RequestContext)
 			filePlugin := ctx.App.GetPlugin("files").(*FilePlugin)
@@ -272,9 +250,10 @@ func (ctl *ImageController) FindOne(c echo.Context) error {
 			resizeOpts := files_processor.Options{
 				"width":  strconv.Itoa(styles[style].Width),
 				"height": strconv.Itoa(styles[style].Height),
+				"url":    url,
 			}
 
-			err = processor.Resize(originalPath, tmpFilePath, resizeOpts)
+			err = processor.Resize(originalPath, tmpFilePath, record.Name, resizeOpts)
 			if err != nil {
 				return err
 			}

@@ -109,7 +109,8 @@ func UploadImageFromLocalhost(fileName string, description string, filePath stri
 		"width":  strconv.Itoa(int(filePlugin.MaxImageWidth)),
 		"height": strconv.Itoa(int(filePlugin.MaxImageHeight)),
 	}
-	err = processor.Resize(filePath, filePath, resizeOpts)
+
+	err = processor.Resize(filePath, filePath, record.Name, resizeOpts)
 	if err != nil {
 		return err
 	}

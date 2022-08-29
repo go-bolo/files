@@ -345,7 +345,10 @@ func (ctl *ImageController) UploadFile(c echo.Context) error {
 	defer os.Remove(tmpFilePath)
 
 	var newFile ImageModel
-	UploadImageFromLocalhost(file.Filename, c.FormValue("description"), tmpFilePath, filePlugin.ImageStorageName, &newFile, ctl.App)
+	err = UploadImageFromLocalhost(file.Filename, c.FormValue("description"), tmpFilePath, filePlugin.ImageStorageName, &newFile, ctl.App)
+	if err != nil {
+		return err
+	}
 
 	err = newFile.Save()
 	if err != nil {

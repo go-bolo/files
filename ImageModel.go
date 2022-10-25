@@ -354,7 +354,7 @@ func ImageQueryAndCountReq(opts *ImageQueryOpts) error {
 		query = query.Where("creatorId LIKE ?", ctx.AuthenticatedUser.GetID())
 	}
 
-	orderColumn, orderIsDesc, orderValid := helpers.ParseUrlQueryOrder(c.QueryParam("order"))
+	orderColumn, orderIsDesc, orderValid := helpers.ParseUrlQueryOrder(c.QueryParam("order"), c.QueryParam("sort"), c.QueryParam("sortDirection"))
 
 	if orderValid {
 		query = query.Order(clause.OrderByColumn{

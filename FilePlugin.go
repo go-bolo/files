@@ -72,7 +72,7 @@ func (p *FilePlugin) BindRoutes(app catu.App) error {
 	routerAPI.GET("", ctl.Query)
 	routerAPI.GET("/:id", ctl.FindOne)
 	routerAPI.POST("/:id", ctl.Update)
-	routerAPI.POST("/:id", ctl.UpdateImageToReprocess)
+	routerAPI.POST("/:id/reprocess", ctl.UpdateImageToReprocess)
 	// routerAPI.GET("/:id", ctl.Delete)
 	routerAPI.GET("/:style/:id", ctl.FindOne)
 	routerAPI.GET("/:id/data", ctl.FindOneData)

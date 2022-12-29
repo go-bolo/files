@@ -178,6 +178,46 @@ func (ctl *ImageController) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, &resp)
 }
 
+func (ctl *ImageController) UpdateImageToReprocess(c echo.Context) error {
+	var err error
+
+	id := c.Param("id")
+
+	RequestContext := c.(*catu.RequestContext)
+
+	logrus.WithFields(logrus.Fields{
+		"id":    id,
+		"roles": RequestContext.GetAuthenticatedRoles(),
+	}).Debug("ImageController.UpdateImageToReprocess id from params")
+
+	can := RequestContext.Can("update_image")
+	if !can {
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
+	record := ImageModel{}
+	err = ImageFindOne(id, &record)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"id":    id,
+			"error": err,
+		}).Debug("ImageController.UpdateImageToReprocess error on find one")
+		return errors.Wrap(err, "ImageController.UpdateImageToReprocess error on find one")
+	}
+
+	record.LoadData()
+	record.ResetURLs(ctl.App)
+
+	err = record.Save()
+	if err != nil {
+		return err
+	}
+	resp := ImageFindOneJSONResponse{
+		Record: &record,
+	}
+
+	return c.JSON(http.StatusOK, &resp)
+}
+
 func (ctl *ImageController) FindOne(c echo.Context) error {
 	id := c.Param("id")
 	style := c.Param("style")

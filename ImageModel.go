@@ -152,6 +152,31 @@ func (m *ImageModel) RefreshURLs() {
 	}
 }
 
+// ResetURL to be reprocessed.
+func (m *ImageModel) ResetURLs(app catu.App) error {
+	filePlugin := app.GetPlugin("files").(*FilePlugin)
+	storage := filePlugin.GetStorage(m.StorageName)
+	styles := filePlugin.ImageStyles
+	baseURL := BuidFileBaseURL(app)
+
+	urls := m.URLs
+	if urls == nil {
+		urls = ImageURL{}
+		urls["original"], _ = storage.GetUrlFromFile("original", m)
+	}
+
+	for style, _ := range styles {
+		if style == "original" {
+			continue
+		}
+		urls[style] = baseURL + "/api/v1/image/" + style + "/" + m.Name
+	}
+
+	m.SetURLs(urls)
+
+	return nil
+}
+
 // FindOne - Find one Image record by id
 func ImageFindOne(id string, record *ImageModel) error {
 	db := catu.GetDefaultDatabaseConnection()

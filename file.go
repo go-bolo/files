@@ -103,3 +103,11 @@ func NewFileFieldConfiguration(modelName, fieldName string) FieldConfigurationIn
 		ModelToAssociate:  FileModel{},
 	}
 }
+
+func BuidFileBaseURL(app catu.App) string {
+	cfg := app.GetConfiguration()
+	port := cfg.GetF("PORT", "8080")
+	protocol := cfg.GetF("PROTOCOL", "http")
+	domain := cfg.GetF("DOMAIN", "localhost")
+	return cfg.GetF("APP_ORIGIN", protocol+"://"+domain+":"+port)
+}

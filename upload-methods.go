@@ -69,7 +69,6 @@ func UploadImageFromLocalhost(fileName string, description string, filePath stri
 	filePlugin := app.GetPlugin("files").(*FilePlugin)
 	storage := filePlugin.GetStorage(storageName)
 	processor := filePlugin.Processor
-	styles := filePlugin.ImageStyles
 
 	fileUUID := uuid.New().String()
 
@@ -120,23 +119,7 @@ func UploadImageFromLocalhost(fileName string, description string, filePath stri
 		return errors.Wrap(err, "UploadImageFromLocalhost Error on upload file")
 	}
 
-	cfg := app.GetConfiguration()
-	port := cfg.GetF("PORT", "8080")
-	protocol := cfg.GetF("PROTOCOL", "http")
-	domain := cfg.GetF("DOMAIN", "localhost")
-	url := cfg.GetF("APP_ORIGIN", protocol+"://"+domain+":"+port)
-
-	urls := ImageURL{}
-	urls["original"], _ = storage.GetUrlFromFile("original", record)
-
-	for style, _ := range styles {
-		if style == "original" {
-			continue
-		}
-		urls[style] = url + "/api/v1/image/" + style + "/" + record.Name
-	}
-
-	record.SetURLs(urls)
+	record.ResetURLs(app)
 
 	return nil
 }

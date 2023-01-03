@@ -38,7 +38,7 @@ type FileModel struct {
 	UpdatedAt      time.Time `gorm:"column:updatedAt;type:datetime;not null" json:"updatedAt"`
 	CreatorID      *int64    `gorm:"column:creatorId;type:int(11)" json:"creatorId"`
 
-	URLs      *FileURL       `gorm:"-" json:"urls"`
+	URLs      ImageURL       `gorm:"-" json:"urls"`
 	ExtraData *FileExtraData `gorm:"-" json:"extraData"`
 
 	LinkPermanent string `gorm:"-" json:"linkPermanent"`
@@ -47,20 +47,6 @@ type FileModel struct {
 // TableName get sql table name
 func (m *FileModel) TableName() string {
 	return "files"
-}
-
-// FileURL sub attribute
-type FileURL struct {
-	Original  string `json:"original"`
-	Thumbnail string `json:"thumbnail"`
-	Medium    string `json:"medium"`
-	Large     string `json:"large"`
-	Banner    string `json:"banner"`
-}
-
-func (m *FileURL) ToJSON() string {
-	jsonString, _ := json.Marshal(m)
-	return string(jsonString)
 }
 
 type FileExtraData struct {
@@ -72,21 +58,10 @@ func (m *FileModel) GetIDString() string {
 }
 
 func (m *FileModel) GetUrl(style string) string {
-	switch style {
-	case "thumbnail":
-		return m.URLs.Thumbnail
-	case "medium":
-		return m.URLs.Medium
-	case "large":
-		return m.URLs.Large
-	case "banner":
-		return m.URLs.Banner
-	default:
-		return m.URLs.Original
-	}
+	return m.URLs["original"]
 }
 
-func (m *FileModel) SetURLs(urls *FileURL) error {
+func (m *FileModel) SetURLs(urls ImageURL) error {
 	m.URLs = urls
 	m.URLsRaw = []byte(urls.ToJSON())
 
@@ -132,6 +107,53 @@ func (m *FileModel) Save() error {
 	return nil
 }
 
+func (m *FileModel) LoadData() error {
+	m.RefreshURLs()
+	return nil
+}
+
+func (m *FileModel) LoadTeaser() error {
+	return nil
+}
+
+func (m *FileModel) RefreshURLs() {
+	if len(m.URLsRaw) > 0 {
+		var url ImageURL
+		err := json.Unmarshal(m.URLsRaw, &url)
+		if err != nil {
+			log.Println("Error on parse file url", m.URLsRaw)
+		} else {
+			m.URLs = url
+		}
+	}
+
+	if len(m.ExtraDataRaw) > 0 {
+		var extraData FileExtraData
+		err := json.Unmarshal(m.ExtraDataRaw, &extraData)
+		if err != nil {
+			log.Println("Error on parse file ExtraDataRaw", m.ExtraDataRaw)
+		} else {
+			m.ExtraData = &extraData
+		}
+	}
+}
+
+// ResetURL to be reprocessed.
+func (m *FileModel) ResetURLs(app catu.App) error {
+	filePlugin := app.GetPlugin("files").(*FilePlugin)
+	storage := filePlugin.GetStorage(m.StorageName)
+
+	urls := m.URLs
+	if urls == nil {
+		urls = ImageURL{}
+		urls["original"], _ = storage.GetUrlFromFile("original", m)
+	}
+
+	m.SetURLs(urls)
+
+	return nil
+}
+
 // GetFilesInField - Find files associated to record field
 func GetFilesInField(modelName, fieldName, modelID string, limit int) ([]*FileModel, error) {
 	db := catu.GetDefaultDatabaseConnection()
@@ -153,14 +175,14 @@ func GetFilesInField(modelName, fieldName, modelID string, limit int) ([]*FileMo
 
 	for i := range files {
 		if len(files[i].URLsRaw) > 0 {
-			var url FileURL
+			var url ImageURL
 			err := json.Unmarshal(files[i].URLsRaw, &url)
 			if err != nil {
 				log.Println("Error on parse file url", files[i].URLsRaw)
 				continue
 			}
 
-			files[i].URLs = &url
+			files[i].URLs = url
 		}
 
 		if len(files[i].ExtraDataRaw) > 0 {
@@ -197,14 +219,14 @@ func GetFilesInRecord(modelName string, modelID string) ([]FileModel, error) {
 
 	for i := range files {
 		if len(files[i].URLsRaw) > 0 {
-			var url FileURL
+			var url ImageURL
 			err := json.Unmarshal(files[i].URLsRaw, &url)
 			if err != nil {
 				log.Println("Error on parse file url", string(files[i].URLsRaw))
 				continue
 			}
 
-			files[i].URLs = &url
+			files[i].URLs = url
 		}
 
 		if len(files[i].ExtraDataRaw) > 0 {
@@ -238,6 +260,22 @@ func FileFindManyInRecord(modelName, fieldName, modelId string, target *[]FileMo
 	}
 
 	return nil
+}
+
+// FindOne - Find one file record by id
+func FileFindOne(id string, record *FileModel) error {
+	db := catu.GetDefaultDatabaseConnection()
+
+	n, err := strconv.ParseInt(id, 10, 64)
+	if err == nil || n == 0 {
+		return db.
+			Where("name = ?", id).
+			First(record).Error
+	} else {
+		return db.
+			Where("id = ? OR name = ?", id, id).
+			First(record).Error
+	}
 }
 
 func FileFindManyByIds(fileIds []string, records *[]FileModel) error {

@@ -64,6 +64,7 @@ func (p *FilePlugin) BindRoutes(app catu.App) error {
 	logrus.Debug(p.GetName() + " BindRoutes")
 
 	ctl := p.ImageController
+	ctlFile := p.FileController
 
 	routerAvatar := app.SetRouterGroup("avatar", "/avatar")
 	routerAvatar.GET("/:userID", ctl.GetAvatar)
@@ -77,6 +78,15 @@ func (p *FilePlugin) BindRoutes(app catu.App) error {
 	routerAPI.GET("/:style/:id", ctl.FindOne)
 	routerAPI.GET("/:id/data", ctl.FindOneData)
 	routerAPI.POST("", ctl.UploadFile)
+
+	routerFileAPI := app.SetRouterGroup("file-api", "/api/v1/file")
+	routerFileAPI.GET("", ctlFile.Query)
+	routerFileAPI.GET("/:id", ctlFile.FindOne)
+	routerFileAPI.POST("/:id", ctlFile.Update)
+	// routerAPI.GET("/:id", ctl.Delete)
+	routerFileAPI.GET("/:style/:id", ctlFile.FindOne)
+	routerFileAPI.GET("/:id/data", ctlFile.FindOneData)
+	routerFileAPI.POST("", ctlFile.UploadFile)
 
 	return nil
 }

@@ -56,10 +56,10 @@ func UploadFileFromLocalhost(fileName string, description string, filePath strin
 		return errors.Wrap(err, "UploadFileFromLocalhost Error on upload file")
 	}
 
-	urls := FileURL{}
-	urls.Original, _ = storage.GetUrlFromFile("original", record)
+	urls := ImageURL{}
+	urls["original"], _ = storage.GetUrlFromFile("original", record)
 
-	record.SetURLs(&urls)
+	record.SetURLs(urls)
 
 	return nil
 }

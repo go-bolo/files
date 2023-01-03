@@ -144,12 +144,8 @@ func GetFileModelStub() FileModel {
 		Extension:    &extension,
 	}
 
-	r.SetURLs(&FileURL{
-		Original:  gofakeit.Word(),
-		Thumbnail: gofakeit.Word(),
-		Medium:    gofakeit.Word(),
-		Large:     gofakeit.Word(),
-		Banner:    gofakeit.Word(),
+	r.SetURLs(ImageURL{
+		"original": gofakeit.Word(),
 	})
 
 	return r

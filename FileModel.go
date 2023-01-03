@@ -11,6 +11,12 @@ import (
 	"github.com/pkg/errors"
 )
 
+func NewFileModel() *FileModel {
+	return &FileModel{
+		CreatedAt: time.Now(),
+	}
+}
+
 // FileModel -
 type FileModel struct {
 	ID uint64 `gorm:"column:id;primary_key"  json:"id"`
@@ -89,6 +95,14 @@ func (m *FileModel) SetURLs(urls *FileURL) error {
 
 func (m *FileModel) GetFileName() string {
 	return m.Name
+}
+
+func (m *FileModel) GetCreatedAt() *time.Time {
+	return &m.CreatedAt
+}
+
+func (m *FileModel) GetUpdatedAt() *time.Time {
+	return &m.UpdatedAt
 }
 
 func (m *FileModel) ToJSON() string {

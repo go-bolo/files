@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/go-catupiry/catu"
@@ -55,14 +54,22 @@ func (u *GCP) SendFileInHTTP(file files_dtos.FileDTO) error {
 	return nil
 }
 
-func (u *GCP) GetUploadPathFromFile(imageStyle string, file files_dtos.FileDTO) (string, error) {
-	datePrefix := time.Now().Format("2006/01/02")
+func (u *GCP) GetUploadPathFromFile(imageStyle, format string, file files_dtos.FileDTO) (string, error) {
+	createdAt := file.GetCreatedAt()
+	datePrefix := createdAt.Format("2006/01/02")
+
+	name := file.GetFileName()
+
+	if imageStyle != "original" && format != "" {
+		name = name + "." + format
+	}
 
 	return datePrefix + "/" + imageStyle + "/" + file.GetFileName(), nil
 }
 
 func (u *GCP) GetUrlFromFile(imageStyle string, file files_dtos.FileDTO) (string, error) {
-	datePrefix := time.Now().Format("2006/01/02")
+	createdAt := file.GetCreatedAt()
+	datePrefix := createdAt.Format("2006/01/02")
 
 	return gcsDomain + "/" + u.BucketName + "/" + datePrefix + "/" + imageStyle + "/" + file.GetFileName(), nil
 }

@@ -49,7 +49,7 @@ func UploadFileFromLocalhost(fileName string, description string, filePath strin
 	record.Originalname = fileName
 	record.StorageName = storageName
 
-	originalDest, _ := storage.GetUploadPathFromFile("original", record)
+	originalDest, _ := storage.GetUploadPathFromFile("original", "", record)
 
 	err = storage.UploadFile(record, filePath, originalDest)
 	if err != nil {
@@ -69,8 +69,8 @@ func UploadImageFromLocalhost(fileName string, description string, filePath stri
 	filePlugin := app.GetPlugin("files").(*FilePlugin)
 	storage := filePlugin.GetStorage(storageName)
 	processor := filePlugin.Processor
-
 	fileUUID := uuid.New().String()
+	styles := filePlugin.ImageStyles
 
 	mimeType, extension, _ := files_helpers.GetFileExtensionAndMimeType(filePath)
 	if extension != "" {
@@ -101,12 +101,24 @@ func UploadImageFromLocalhost(fileName string, description string, filePath stri
 	record.Mime = &defaultMime
 	record.Name = fileUUID + "." + defaultExtension
 
-	originalDest, _ := storage.GetUploadPathFromFile("original", record)
+	originalDest, _ := storage.GetUploadPathFromFile("original", "", record)
+
+	var resizeOpts files_processor.Options
 
 	// ORIGINAL:
-	resizeOpts := files_processor.Options{
-		"width":  strconv.Itoa(int(filePlugin.MaxImageWidth)),
-		"height": strconv.Itoa(int(filePlugin.MaxImageHeight)),
+	if style, ok := styles["original"]; ok {
+		// set original format to override / resize default format
+		resizeOpts = files_processor.Options{
+			"width":  strconv.Itoa(int(style.Width)),
+			"height": strconv.Itoa(int(style.Height)),
+			"format": style.Format,
+		}
+	} else {
+		// Default:
+		resizeOpts = files_processor.Options{
+			"width":  strconv.Itoa(int(filePlugin.MaxImageWidth)),
+			"height": strconv.Itoa(int(filePlugin.MaxImageHeight)),
+		}
 	}
 
 	err = processor.Resize(filePath, filePath, record.Name, resizeOpts)

@@ -101,6 +101,8 @@ type FilePluginCfgs struct {
 type ImageStyleCfg struct {
 	Width  int
 	Height int
+	// image format to convert with lowercase like jpg. Default: webp
+	Format string
 }
 
 func NewPlugin(cfgs *FilePluginCfgs) *FilePlugin {

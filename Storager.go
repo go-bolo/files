@@ -6,7 +6,7 @@ import (
 
 type Storager interface {
 	SendFileInHTTP(file files_dtos.FileDTO) error
-	GetUploadPathFromFile(imageStyle string, file files_dtos.FileDTO) (string, error)
+	GetUploadPathFromFile(imageStyle, format string, file files_dtos.FileDTO) (string, error)
 	GetUrlFromFile(imageStyle string, file files_dtos.FileDTO) (string, error)
 	UploadFile(file files_dtos.FileDTO, tmpFilePath string, destPath string) error
 	DestroyFile(file files_dtos.FileDTO) error

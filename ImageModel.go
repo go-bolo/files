@@ -19,6 +19,12 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+func NewImageModel() *ImageModel {
+	return &ImageModel{
+		CreatedAt: time.Now(),
+	}
+}
+
 // Image model
 type ImageModel struct {
 	ID             uint64    `gorm:"column:id;primary_key"  json:"id"`
@@ -92,6 +98,22 @@ func (m *ImageModel) SetURLs(urls ImageURL) error {
 
 func (m *ImageModel) GetFileName() string {
 	return m.Name
+}
+
+func (m *ImageModel) GetCreatedAt() *time.Time {
+	if m.CreatedAt.IsZero() {
+		t := time.Now()
+		return &t
+	}
+	return &m.CreatedAt
+}
+
+func (m *ImageModel) GetUpdatedAt() *time.Time {
+	if m.UpdatedAt.IsZero() {
+		t := time.Now()
+		return &t
+	}
+	return &m.UpdatedAt
 }
 
 func (m *ImageModel) ToJSON() string {

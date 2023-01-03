@@ -291,6 +291,7 @@ func (ctl *ImageController) FindOne(c echo.Context) error {
 				"width":  strconv.Itoa(styles[style].Width),
 				"height": strconv.Itoa(styles[style].Height),
 				"url":    url,
+				"format": styles[style].Format,
 			}
 
 			err = processor.Resize(originalPath, tmpFilePath, record.Name, resizeOpts)
@@ -298,7 +299,7 @@ func (ctl *ImageController) FindOne(c echo.Context) error {
 				return err
 			}
 
-			dest, _ := storage.GetUploadPathFromFile(style, &record)
+			dest, _ := storage.GetUploadPathFromFile(style, styles[style].Format, &record)
 
 			err = storage.UploadFile(&record, tmpFilePath, dest)
 			if err != nil {
@@ -384,8 +385,8 @@ func (ctl *ImageController) UploadFile(c echo.Context) error {
 
 	defer os.Remove(tmpFilePath)
 
-	var newFile ImageModel
-	err = UploadImageFromLocalhost(file.Filename, c.FormValue("description"), tmpFilePath, filePlugin.ImageStorageName, &newFile, ctl.App)
+	newFile := NewImageModel()
+	err = UploadImageFromLocalhost(file.Filename, c.FormValue("description"), tmpFilePath, filePlugin.ImageStorageName, newFile, ctl.App)
 	if err != nil {
 		return err
 	}
@@ -395,5 +396,5 @@ func (ctl *ImageController) UploadFile(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, &ImageFindOneJSONResponse{Record: &newFile})
+	return c.JSON(http.StatusOK, &ImageFindOneJSONResponse{Record: newFile})
 }

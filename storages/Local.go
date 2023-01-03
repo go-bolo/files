@@ -35,7 +35,7 @@ func (s *Local) SendFileInHTTP(file files_dtos.FileDTO) error {
 	return nil
 }
 
-func (s *Local) GetUploadPathFromFile(imageStyle string, file files_dtos.FileDTO) (string, error) {
+func (s *Local) GetUploadPathFromFile(imageStyle, format string, file files_dtos.FileDTO) (string, error) {
 	datePrefix := time.Now().Format("2006/01/02")
 
 	return datePrefix + "/" + imageStyle + "/" + file.GetFileName(), nil
@@ -44,7 +44,7 @@ func (s *Local) GetUploadPathFromFile(imageStyle string, file files_dtos.FileDTO
 func (s *Local) GetUrlFromFile(imageStyle string, file files_dtos.FileDTO) (string, error) {
 	appOrigin := s.App.GetConfiguration().Get("APP_ORIGIN")
 
-	sufix, err := s.GetUploadPathFromFile(imageStyle, file)
+	sufix, err := s.GetUploadPathFromFile(imageStyle, "", file)
 	if err != nil {
 		return "", err
 	}

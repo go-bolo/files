@@ -204,7 +204,7 @@ func ImageFindOne(id string, record *ImageModel) error {
 	db := catu.GetDefaultDatabaseConnection()
 
 	n, err := strconv.ParseInt(id, 10, 64)
-	if err == nil || n == 0 {
+	if err != nil || n == 0 {
 		return db.
 			Where("name = ?", id).
 			First(record).Error

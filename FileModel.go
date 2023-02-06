@@ -269,11 +269,11 @@ func FileFindOne(id string, record *FileModel) error {
 	n, err := strconv.ParseInt(id, 10, 64)
 	if err == nil || n == 0 {
 		return db.
-			Where("name = ?", id).
+			Where("id = ? OR name = ?", id, id).
 			First(record).Error
 	} else {
 		return db.
-			Where("id = ? OR name = ?", id, id).
+			Where("name = ?", id).
 			First(record).Error
 	}
 }

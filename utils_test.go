@@ -4,14 +4,14 @@ import (
 	"os"
 
 	"github.com/brianvoe/gofakeit"
-	"github.com/go-catupiry/catu"
-	files_storages "github.com/go-catupiry/files/storages"
+	"github.com/go-bolo/bolo"
+	files_storages "github.com/go-bolo/files/storages"
 	"github.com/pkg/errors"
 )
 
-var appInstance catu.App
+var appInstance bolo.App
 
-func GetAppInstance() catu.App {
+func GetAppInstance() bolo.App {
 	if appInstance != nil {
 		return appInstance
 	}
@@ -20,7 +20,7 @@ func GetAppInstance() catu.App {
 	os.Setenv("DB_ENGINE", "sqlite")
 	// os.Setenv("LOG_QUERY", "1")
 
-	app := catu.Init(&catu.AppOptions{})
+	app := bolo.Init(&bolo.AppOptions{})
 	app.RegisterPlugin(NewPlugin(&FilePluginCfgs{
 		Storages: map[string]Storager{
 			"file": files_storages.NewLocal(&files_storages.LocalCfg{

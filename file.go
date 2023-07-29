@@ -1,7 +1,7 @@
 package files
 
 import (
-	"github.com/go-catupiry/catu"
+	"github.com/go-bolo/bolo"
 	"gorm.io/gorm"
 )
 
@@ -78,7 +78,7 @@ func (f *FieldConfiguration) ClearField(modelID string) error {
 
 // Create a new field configuration with default image settings
 func NewImageFieldConfiguration(modelName, fieldName string) FieldConfigurationInterface {
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	return &FieldConfiguration{
 		DB:                db,
@@ -92,7 +92,7 @@ func NewImageFieldConfiguration(modelName, fieldName string) FieldConfigurationI
 
 // Create a new field configuration with default file settings
 func NewFileFieldConfiguration(modelName, fieldName string) FieldConfigurationInterface {
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	return &FieldConfiguration{
 		DB:                db,
@@ -104,7 +104,7 @@ func NewFileFieldConfiguration(modelName, fieldName string) FieldConfigurationIn
 	}
 }
 
-func BuidFileBaseURL(app catu.App) string {
+func BuidFileBaseURL(app bolo.App) string {
 	cfg := app.GetConfiguration()
 	port := cfg.GetF("PORT", "8080")
 	protocol := cfg.GetF("PROTOCOL", "http")

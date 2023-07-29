@@ -4,10 +4,10 @@ import (
 	"io"
 	"os"
 
-	"github.com/go-catupiry/catu"
+	"github.com/go-bolo/bolo"
 )
 
-func CopyRequestFileToTMP(c *catu.RequestContext, field string, dest string) error {
+func CopyRequestFileToTMP(c *bolo.RequestContext, field string, dest string) error {
 	file, err := c.FormFile(field)
 	if err != nil {
 		return err

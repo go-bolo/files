@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-catupiry/catu"
-	files_helpers "github.com/go-catupiry/files/helpers"
-	files_processor "github.com/go-catupiry/files/processor"
+	"github.com/go-bolo/bolo"
+	files_helpers "github.com/go-bolo/files/helpers"
+	files_processor "github.com/go-bolo/files/processor"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
@@ -17,12 +17,12 @@ import (
 )
 
 type ImageListJSONResponse struct {
-	catu.BaseListReponse
+	bolo.BaseListReponse
 	Records *[]*ImageModel `json:"image"`
 }
 
 // type ImageCountJSONResponse struct {
-// 	catu.BaseMetaResponse
+// 	bolo.BaseMetaResponse
 // }
 
 type ImageFindOneJSONResponse struct {
@@ -34,7 +34,7 @@ type ImageBodyRequest struct {
 }
 
 // type ImageTeaserTPL struct {
-// 	Ctx    *catu.RequestContext
+// 	Ctx    *bolo.RequestContext
 // 	Record *Model
 // }
 
@@ -43,15 +43,15 @@ func NewImageController(cfgs *ImageControllerConfiguration) *ImageController {
 }
 
 type ImageControllerConfiguration struct {
-	App catu.App
+	App bolo.App
 }
 
 type ImageController struct {
-	App catu.App
+	App bolo.App
 }
 
 func (ctl *ImageController) GetAvatar(c echo.Context) error {
-	cfgs := catu.GetApp().GetConfiguration()
+	cfgs := bolo.GetApp().GetConfiguration()
 
 	userID := c.Param("userID")
 
@@ -83,7 +83,7 @@ func (ctl *ImageController) SetAvatar(c echo.Context) error {
 
 func (ctl *ImageController) Query(c echo.Context) error {
 	var err error
-	ctx := c.(*catu.RequestContext)
+	ctx := c.(*bolo.RequestContext)
 
 	can := ctx.Can("find_image")
 	if !can {
@@ -130,7 +130,7 @@ func (ctl *ImageController) Update(c echo.Context) error {
 
 	id := c.Param("id")
 
-	RequestContext := c.(*catu.RequestContext)
+	RequestContext := c.(*bolo.RequestContext)
 
 	logrus.WithFields(logrus.Fields{
 		"id":    id,
@@ -183,7 +183,7 @@ func (ctl *ImageController) UpdateImageToReprocess(c echo.Context) error {
 
 	id := c.Param("id")
 
-	RequestContext := c.(*catu.RequestContext)
+	RequestContext := c.(*bolo.RequestContext)
 
 	logrus.WithFields(logrus.Fields{
 		"id":    id,
@@ -222,7 +222,7 @@ func (ctl *ImageController) FindOne(c echo.Context) error {
 	id := c.Param("id")
 	style := c.Param("style")
 
-	ctx := c.(*catu.RequestContext)
+	ctx := c.(*bolo.RequestContext)
 
 	can := ctx.Can("find_image")
 	if !can {
@@ -278,7 +278,7 @@ func (ctl *ImageController) FindOne(c echo.Context) error {
 			originalPath := path.Join(os.TempDir(), record.Name) + "_original"
 			defer os.Remove(originalPath)
 
-			ctx := c.(*catu.RequestContext)
+			ctx := c.(*bolo.RequestContext)
 			filePlugin := ctx.App.GetPlugin("files").(*FilePlugin)
 			storageName := filePlugin.ImageStorageName
 			storage := filePlugin.GetStorage(storageName)
@@ -322,7 +322,7 @@ func (ctl *ImageController) FindOne(c echo.Context) error {
 
 func (ctl *ImageController) FindOneData(c echo.Context) error {
 	id := c.Param("id")
-	ctx := c.(*catu.RequestContext)
+	ctx := c.(*bolo.RequestContext)
 
 	logrus.WithFields(logrus.Fields{
 		"id": id,
@@ -358,7 +358,7 @@ func (ctl *ImageController) FindOneData(c echo.Context) error {
 
 func (ctl *ImageController) UploadFile(c echo.Context) error {
 	var err error
-	ctx := c.(*catu.RequestContext)
+	ctx := c.(*bolo.RequestContext)
 
 	can := ctx.Can("create_image")
 	if !can {

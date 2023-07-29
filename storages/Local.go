@@ -5,13 +5,13 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/go-catupiry/catu"
+	"github.com/go-bolo/bolo"
+	files_helpers "github.com/go-bolo/files/helpers"
 	files_dtos "github.com/go-catupiry/files/dtos"
-	files_helpers "github.com/go-catupiry/files/helpers"
 )
 
 type LocalCfg struct {
-	App             catu.App
+	App             bolo.App
 	DestinationPath string
 }
 
@@ -27,7 +27,7 @@ func NewLocal(cfg *LocalCfg) *Local {
 }
 
 type Local struct {
-	App             catu.App
+	App             bolo.App
 	DestinationPath string
 }
 

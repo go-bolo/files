@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-catupiry/catu"
-	files_helpers "github.com/go-catupiry/files/helpers"
-	files_processor "github.com/go-catupiry/files/processor"
+	"github.com/go-bolo/bolo"
+	files_helpers "github.com/go-bolo/files/helpers"
+	files_processor "github.com/go-bolo/files/processor"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
@@ -15,7 +15,7 @@ import (
 var defaultExtension = "webp"
 var defaultMime = "image/webp"
 
-func UploadFileFromLocalhost(fileName string, description string, filePath string, storageName string, record *FileModel, app catu.App) error {
+func UploadFileFromLocalhost(fileName string, description string, filePath string, storageName string, record *FileModel, app bolo.App) error {
 	var err error
 	filePlugin := app.GetPlugin("files").(*FilePlugin)
 	storage := filePlugin.GetStorage(storageName)
@@ -64,7 +64,7 @@ func UploadFileFromLocalhost(fileName string, description string, filePath strin
 	return nil
 }
 
-func UploadImageFromLocalhost(fileName string, description string, filePath string, storageName string, record *ImageModel, app catu.App) error {
+func UploadImageFromLocalhost(fileName string, description string, filePath string, storageName string, record *ImageModel, app bolo.App) error {
 	var err error
 	filePlugin := app.GetPlugin("files").(*FilePlugin)
 	storage := filePlugin.GetStorage(storageName)

@@ -5,8 +5,7 @@ go 1.20
 require (
 	cloud.google.com/go/storage v1.24.0
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
-	github.com/go-bolo/bolo v0.0.0-20230725002137-d5b5111c36b9
-	github.com/go-catupiry/catu v0.3.9
+	github.com/go-bolo/bolo v1.0.0
 	github.com/go-catupiry/files v0.0.10
 	github.com/google/uuid v1.3.0
 	github.com/gookit/event v1.1.1
@@ -30,6 +29,7 @@ require (
 	github.com/cuducos/go-cnpj v0.1.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
+	github.com/go-bolo/clock v0.0.3 // indirect
 	github.com/go-bolo/query_parser_to_db v1.0.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
@@ -61,6 +61,8 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
+	github.com/tdewolff/minify/v2 v2.12.7 // indirect
+	github.com/tdewolff/parse/v2 v2.6.6 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	go.opencensus.io v0.23.0 // indirect

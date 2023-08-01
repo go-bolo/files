@@ -6,7 +6,6 @@ require (
 	cloud.google.com/go/storage v1.24.0
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/go-bolo/bolo v1.0.0
-	github.com/go-catupiry/files v0.0.10
 	github.com/google/uuid v1.3.0
 	github.com/gookit/event v1.1.1
 	github.com/labstack/echo/v4 v4.11.1

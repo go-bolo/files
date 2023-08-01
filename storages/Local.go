@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/go-bolo/bolo"
+	files_dtos "github.com/go-bolo/files/dtos"
 	files_helpers "github.com/go-bolo/files/helpers"
-	files_dtos "github.com/go-catupiry/files/dtos"
 )
 
 type LocalCfg struct {

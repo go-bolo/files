@@ -10,7 +10,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/go-bolo/bolo"
-	files_dtos "github.com/go-catupiry/files/dtos"
+	files_dtos "github.com/go-bolo/files/dtos"
 	"github.com/pkg/errors"
 	"google.golang.org/api/option"
 )

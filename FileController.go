@@ -6,9 +6,9 @@ import (
 	"os"
 	"path"
 
-	"github.com/go-catupiry/catu"
-	"github.com/go-catupiry/catu/helpers"
-	files_helpers "github.com/go-catupiry/files/helpers"
+	"github.com/go-bolo/bolo"
+	"github.com/go-bolo/bolo/helpers"
+	files_helpers "github.com/go-bolo/files/helpers"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
@@ -18,7 +18,7 @@ import (
 )
 
 type FileListJSONResponse struct {
-	catu.BaseListReponse
+	bolo.BaseListReponse
 	Records *[]*FileModel `json:"file"`
 }
 
@@ -35,11 +35,11 @@ func NewFileController(cfgs *FileControllerConfiguration) *FileController {
 }
 
 type FileControllerConfiguration struct {
-	App catu.App
+	App bolo.App
 }
 
 type FileController struct {
-	App catu.App
+	App bolo.App
 }
 
 type FileQueryOpts struct {
@@ -53,7 +53,7 @@ type FileQueryOpts struct {
 
 func (ctl *FileController) Query(c echo.Context) error {
 	var err error
-	ctx := c.(*catu.RequestContext)
+	ctx := c.(*bolo.RequestContext)
 
 	can := ctx.Can("find_file")
 	if !can {
@@ -100,7 +100,7 @@ func (ctl *FileController) Update(c echo.Context) error {
 
 	id := c.Param("id")
 
-	RequestContext := c.(*catu.RequestContext)
+	RequestContext := c.(*bolo.RequestContext)
 
 	logrus.WithFields(logrus.Fields{
 		"id":    id,
@@ -152,7 +152,7 @@ func (ctl *FileController) FindOne(c echo.Context) error {
 	id := c.Param("id")
 	style := "original"
 
-	ctx := c.(*catu.RequestContext)
+	ctx := c.(*bolo.RequestContext)
 
 	can := ctx.Can("find_file")
 	if !can {
@@ -184,7 +184,7 @@ func (ctl *FileController) FindOne(c echo.Context) error {
 
 func (ctl *FileController) FindOneData(c echo.Context) error {
 	id := c.Param("id")
-	ctx := c.(*catu.RequestContext)
+	ctx := c.(*bolo.RequestContext)
 
 	logrus.WithFields(logrus.Fields{
 		"id": id,
@@ -220,7 +220,7 @@ func (ctl *FileController) FindOneData(c echo.Context) error {
 
 func (ctl *FileController) UploadFile(c echo.Context) error {
 	var err error
-	ctx := c.(*catu.RequestContext)
+	ctx := c.(*bolo.RequestContext)
 
 	can := ctx.Can("create_file")
 	if !can {
@@ -262,11 +262,11 @@ func (ctl *FileController) UploadFile(c echo.Context) error {
 }
 
 func FileQueryAndCountReq(opts *FileQueryOpts) error {
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 	c := opts.C
 	q := c.QueryParam("q")
 	query := db
-	ctx := c.(*catu.RequestContext)
+	ctx := c.(*bolo.RequestContext)
 
 	queryI, err := ctx.Query.SetDatabaseQueryForModel(query, &FileModel{})
 	if err != nil {
@@ -309,10 +309,10 @@ func FileQueryAndCountReq(opts *FileQueryOpts) error {
 }
 
 func FileCountReq(opts *FileQueryOpts) error {
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 	c := opts.C
 	q := c.QueryParam("q")
-	ctx := c.(*catu.RequestContext)
+	ctx := c.(*bolo.RequestContext)
 	// Count ...
 	queryCount := db
 

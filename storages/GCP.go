@@ -9,8 +9,8 @@ import (
 	"os"
 
 	"cloud.google.com/go/storage"
-	"github.com/go-catupiry/catu"
-	files_dtos "github.com/go-catupiry/files/dtos"
+	"github.com/go-bolo/bolo"
+	files_dtos "github.com/go-bolo/files/dtos"
 	"github.com/pkg/errors"
 	"google.golang.org/api/option"
 )
@@ -18,7 +18,7 @@ import (
 var gcsDomain = "https://storage.googleapis.com"
 
 type GCPCfg struct {
-	App         catu.App
+	App         bolo.App
 	BucketName  string
 	ObjectAttrs *storage.ObjectAttrs
 }
@@ -35,7 +35,7 @@ func NewGCP(cfg *GCPCfg) *GCP {
 }
 
 type GCP struct {
-	App           catu.App
+	App           bolo.App
 	BucketName    string
 	ClientOptions option.ClientOption
 	ObjectAttrs   *storage.ObjectAttrs

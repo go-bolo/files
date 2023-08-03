@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-catupiry/catu"
-	"github.com/go-catupiry/catu/helpers"
+	"github.com/go-bolo/bolo"
+	"github.com/go-bolo/bolo/helpers"
 	"github.com/labstack/echo/v4"
 
 	"github.com/pkg/errors"
@@ -124,7 +124,7 @@ func (m *ImageModel) ToJSON() string {
 // Save - Create if is new or update
 func (m *ImageModel) Save() error {
 	var err error
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	if m.ID == 0 {
 		// create ....
@@ -175,7 +175,7 @@ func (m *ImageModel) RefreshURLs() {
 }
 
 // ResetURL to be reprocessed.
-func (m *ImageModel) ResetURLs(app catu.App) error {
+func (m *ImageModel) ResetURLs(app bolo.App) error {
 	filePlugin := app.GetPlugin("files").(*FilePlugin)
 	storage := filePlugin.GetStorage(m.StorageName)
 	styles := filePlugin.ImageStyles
@@ -201,7 +201,7 @@ func (m *ImageModel) ResetURLs(app catu.App) error {
 
 // FindOne - Find one Image record by id
 func ImageFindOne(id string, record *ImageModel) error {
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	n, err := strconv.ParseInt(id, 10, 64)
 	if err != nil || n == 0 {
@@ -217,7 +217,7 @@ func ImageFindOne(id string, record *ImageModel) error {
 
 // Query / findMany image records
 func Query(records *[]ImageModel, limit int) error {
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	return db.
 		Order("publishedAt desc").
@@ -241,7 +241,7 @@ func AvatarFindOne(userId string) (*ImageModel, error) {
 
 // GetImagesInField - Find images associated to record field
 func GetImagesInField(modelName, fieldName, modelID string, limit int) ([]*ImageModel, error) {
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	var images []*ImageModel
 
@@ -287,7 +287,7 @@ func GetImagesInField(modelName, fieldName, modelID string, limit int) ([]*Image
 
 // GetImagesInRecord - Find all images associated to record
 func GetImagesInRecord(modelName string, modelID string) ([]ImageModel, error) {
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	var images []ImageModel
 
@@ -331,7 +331,7 @@ func GetImagesInRecord(modelName string, modelID string) ([]ImageModel, error) {
 }
 
 func ImageFindManyInRecord(modelName, fieldName, modelId string, target *[]ImageModel) error {
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	err := db.
 		Joins(`INNER JOIN imageassocs AS A on
@@ -349,7 +349,7 @@ func ImageFindManyInRecord(modelName, fieldName, modelId string, target *[]Image
 }
 
 func ImageFindManyByIds(imageIds []string, records *[]ImageModel) error {
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	err := db.Where("id IN ?", imageIds).
 		Find(records).Error
@@ -370,12 +370,12 @@ type ImageQueryOpts struct {
 }
 
 func ImageQueryAndCountReq(opts *ImageQueryOpts) error {
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 	c := opts.C
 	q := c.QueryParam("q")
 	seletor := c.QueryParam("seletor")
 	query := db
-	ctx := c.(*catu.RequestContext)
+	ctx := c.(*bolo.RequestContext)
 
 	queryI, err := ctx.Query.SetDatabaseQueryForModel(query, &ImageModel{})
 	if err != nil {
@@ -426,10 +426,10 @@ func ImageQueryAndCountReq(opts *ImageQueryOpts) error {
 }
 
 func ImageCountReq(opts *ImageQueryOpts) error {
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 	c := opts.C
 	q := c.QueryParam("q")
-	ctx := c.(*catu.RequestContext)
+	ctx := c.(*bolo.RequestContext)
 	// Count ...
 	queryCount := db
 
@@ -522,7 +522,7 @@ func AddImagesInFieldByIDs(modelId string, imageIds []string, cfg FieldConfigura
 		return nil
 	}
 
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	images := []ImageModel{}
 
@@ -573,7 +573,7 @@ func RemoveImagesFromFieldByIds(modelId string, imageIds []string, cfg FieldConf
 		return nil
 	}
 
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	assocs := []ImageAssocsModel{}
 

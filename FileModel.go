@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-catupiry/catu"
-	"github.com/go-catupiry/catu/helpers"
+	"github.com/go-bolo/bolo"
+	"github.com/go-bolo/bolo/helpers"
 	"github.com/pkg/errors"
 )
 
@@ -88,7 +88,7 @@ func (m *FileModel) ToJSON() string {
 // Save - Create if is new or update
 func (m *FileModel) Save() error {
 	var err error
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	if m.ID == 0 {
 		// create ....
@@ -139,7 +139,7 @@ func (m *FileModel) RefreshURLs() {
 }
 
 // ResetURL to be reprocessed.
-func (m *FileModel) ResetURLs(app catu.App) error {
+func (m *FileModel) ResetURLs(app bolo.App) error {
 	filePlugin := app.GetPlugin("files").(*FilePlugin)
 	storage := filePlugin.GetStorage(m.StorageName)
 
@@ -156,7 +156,7 @@ func (m *FileModel) ResetURLs(app catu.App) error {
 
 // GetFilesInField - Find files associated to record field
 func GetFilesInField(modelName, fieldName, modelID string, limit int) ([]*FileModel, error) {
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	var files []*FileModel
 
@@ -202,7 +202,7 @@ func GetFilesInField(modelName, fieldName, modelID string, limit int) ([]*FileMo
 
 // GetFilesInRecord - Find all files associated to record
 func GetFilesInRecord(modelName string, modelID string) ([]FileModel, error) {
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	var files []FileModel
 
@@ -245,7 +245,7 @@ func GetFilesInRecord(modelName string, modelID string) ([]FileModel, error) {
 }
 
 func FileFindManyInRecord(modelName, fieldName, modelId string, target *[]FileModel) error {
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	err := db.
 		Joins(`INNER JOIN fileassocs AS A on
@@ -264,7 +264,7 @@ func FileFindManyInRecord(modelName, fieldName, modelId string, target *[]FileMo
 
 // FindOne - Find one file record by id
 func FileFindOne(id string, record *FileModel) error {
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	n, err := strconv.ParseInt(id, 10, 64)
 	if err == nil || n == 0 {
@@ -279,7 +279,7 @@ func FileFindOne(id string, record *FileModel) error {
 }
 
 func FileFindManyByIds(fileIds []string, records *[]FileModel) error {
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	err := db.Where("id IN ?", fileIds).
 		Find(records).Error
@@ -358,7 +358,7 @@ func AddFilesInFieldByIDs(modelId string, fileIds []string, cfg FieldConfigurati
 		return nil
 	}
 
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	files := []FileModel{}
 
@@ -407,7 +407,7 @@ func RemoveFilesFromFieldByIds(modelId string, fileIds []string, cfg FieldConfig
 		return nil
 	}
 
-	db := catu.GetDefaultDatabaseConnection()
+	db := bolo.GetDefaultDatabaseConnection()
 
 	assocs := []FileAssocsModel{}
 

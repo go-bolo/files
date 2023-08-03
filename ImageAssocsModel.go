@@ -3,7 +3,7 @@ package files
 import (
 	"time"
 
-	"github.com/go-catupiry/catu/models"
+	"github.com/go-bolo/bolo/models"
 )
 
 // ImageAssocsModel - Model to associate a image with a record of any type

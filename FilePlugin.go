@@ -1,14 +1,14 @@
 package files
 
 import (
-	"github.com/go-catupiry/catu"
-	files_processor "github.com/go-catupiry/files/processor"
+	"github.com/go-bolo/bolo"
+	files_processor "github.com/go-bolo/files/processor"
 	"github.com/gookit/event"
 	"github.com/sirupsen/logrus"
 )
 
 type FilePlugin struct {
-	catu.Pluginer
+	bolo.Pluginer
 
 	Name            string
 	FileController  *FileController
@@ -39,7 +39,7 @@ func (p *FilePlugin) SetStorage(fileTypeName string, s Storager) error {
 	return nil
 }
 
-func (p *FilePlugin) Init(app catu.App) error {
+func (p *FilePlugin) Init(app bolo.App) error {
 	logrus.Debug(p.GetName() + " Init")
 
 	p.FileController = NewFileController(&FileControllerConfiguration{
@@ -60,7 +60,7 @@ func (p *FilePlugin) Init(app catu.App) error {
 	return nil
 }
 
-func (p *FilePlugin) BindRoutes(app catu.App) error {
+func (p *FilePlugin) BindRoutes(app bolo.App) error {
 	logrus.Debug(p.GetName() + " BindRoutes")
 
 	ctl := p.ImageController
@@ -91,7 +91,7 @@ func (p *FilePlugin) BindRoutes(app catu.App) error {
 	return nil
 }
 
-func (p *FilePlugin) setTemplateFunctions(app catu.App) error {
+func (p *FilePlugin) setTemplateFunctions(app bolo.App) error {
 	app.SetTemplateFunction("image", imageTPLHelper)
 	app.SetTemplateFunction("images", imagesTPLHelper)
 

@@ -30,7 +30,7 @@ package files
 // 		rec := httptest.NewRecorder()
 // 		c := e.NewContext(req, rec)
 
-// 		ctx := catu.NewRequestContext(&catu.RequestContextOpts{EchoContext: c})
+// 		ctx := bolo.NewRequestContext(&bolo.RequestContextOpts{EchoContext: c})
 // 		ctx.IsAuthenticated = true
 // 		ctx.Roles = append(ctx.Roles, "administrator")
 

@@ -1,7 +1,7 @@
 package files
 
 import (
-	files_dtos "github.com/go-catupiry/files/dtos"
+	files_dtos "github.com/go-bolo/files/dtos"
 )
 
 type Storager interface {

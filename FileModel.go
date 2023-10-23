@@ -18,6 +18,32 @@ func NewFileModel() *FileModel {
 }
 
 // FileModel -
+// SQL:
+// CREATE TABLE `files` (
+//
+//	`id` int(11) NOT NULL AUTO_INCREMENT,
+//	`label` varchar(255) DEFAULT NULL,
+//	`description` text,
+//	`name` varchar(255) NOT NULL,
+//	`size` int(11) DEFAULT NULL,
+//	`encoding` varchar(255) DEFAULT NULL,
+//	`active` tinyint(1) DEFAULT '1',
+//	`originalname` varchar(255) DEFAULT NULL,
+//	`mime` varchar(255) DEFAULT NULL,
+//	`extension` varchar(10) DEFAULT NULL,
+//	`storageName` varchar(255) DEFAULT NULL,
+//	`isLocalStorage` tinyint(1) DEFAULT '1',
+//	`urls` blob NOT NULL,
+//	`extraData` blob,
+//	`createdAt` datetime NOT NULL,
+//	`updatedAt` datetime NOT NULL,
+//	`creatorId` int(11) DEFAULT NULL,
+//	PRIMARY KEY (`id`),
+//	UNIQUE KEY `name` (`name`),
+//	KEY `creatorId` (`creatorId`),
+//	CONSTRAINT `files_ibfk_1` FOREIGN KEY (`creatorId`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+//
+// );
 type FileModel struct {
 	ID uint64 `gorm:"column:id;primary_key"  json:"id"`
 

@@ -2,6 +2,7 @@ package files
 
 import (
 	"github.com/go-bolo/bolo"
+	"github.com/go-bolo/files/migrations"
 	files_processor "github.com/go-bolo/files/processor"
 	"github.com/gookit/event"
 	"github.com/sirupsen/logrus"
@@ -96,6 +97,12 @@ func (p *FilePlugin) setTemplateFunctions(app bolo.App) error {
 	app.SetTemplateFunction("images", imagesTPLHelper)
 
 	return nil
+}
+
+func (p *FilePlugin) GetMigrations() []*bolo.Migration {
+	return []*bolo.Migration{
+		migrations.GetInitMigration(),
+	}
 }
 
 type FilePluginCfgs struct {

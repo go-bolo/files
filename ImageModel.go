@@ -199,6 +199,11 @@ func (m *ImageModel) ResetURLs(app bolo.App) error {
 	return nil
 }
 
+func (m *ImageModel) Delete() error {
+	db := bolo.GetDefaultDatabaseConnection()
+	return db.Unscoped().Delete(&m).Error
+}
+
 // FindOne - Find one Image record by id
 func ImageFindOne(id string, record *ImageModel) error {
 	db := bolo.GetDefaultDatabaseConnection()

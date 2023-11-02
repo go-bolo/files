@@ -21,9 +21,9 @@ type ImageListJSONResponse struct {
 	Records *[]*ImageModel `json:"image"`
 }
 
-// type ImageCountJSONResponse struct {
-// 	bolo.BaseMetaResponse
-// }
+type ImageCountJSONResponse struct {
+	bolo.BaseMetaResponse
+}
 
 type ImageFindOneJSONResponse struct {
 	Record *ImageModel `json:"image"`
@@ -125,6 +125,10 @@ func (ctl *ImageController) Query(c echo.Context) error {
 	return c.JSON(200, &resp)
 }
 
+func (ctl *ImageController) Create(c echo.Context) error {
+	return ctl.UploadFile(c)
+}
+
 func (ctl *ImageController) Update(c echo.Context) error {
 	var err error
 
@@ -216,6 +220,36 @@ func (ctl *ImageController) UpdateImageToReprocess(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, &resp)
+}
+
+func (ctl *ImageController) Count(c echo.Context) error {
+	var err error
+	ctx := c.(*bolo.RequestContext)
+
+	var count int64
+	err = ImageCountReq(&ImageQueryOpts{
+		Count:  &count,
+		Limit:  ctx.GetLimit(),
+		Offset: ctx.GetOffset(),
+		C:      c,
+	})
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Debug("ImageController error on count")
+		return &bolo.HTTPError{
+			Code:     http.StatusInternalServerError,
+			Message:  "ImageController: error on count",
+			Internal: err,
+		}
+	}
+
+	ctx.Pager.Count = count
+
+	resp := ImageCountJSONResponse{}
+	resp.Count = count
+
+	return c.JSON(200, &resp)
 }
 
 func (ctl *ImageController) FindOne(c echo.Context) error {
@@ -397,4 +431,42 @@ func (ctl *ImageController) UploadFile(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, &ImageFindOneJSONResponse{Record: newFile})
+}
+
+func (ctl *ImageController) Delete(c echo.Context) error {
+	app := ctl.App
+
+	id := c.Param("id")
+	ctx := c.(*bolo.RequestContext)
+
+	can := ctx.Can("delete_image")
+	if !can {
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
+
+	record := ImageModel{}
+	err := ImageFindOne(id, &record)
+	if err != nil {
+		return err
+	}
+
+	err, _ = app.GetEvents().Trigger("image-delete", map[string]any{
+		"echoContext": c,
+		"record":      &record,
+	})
+
+	if err != nil {
+		return &bolo.HTTPError{
+			Code:     http.StatusInternalServerError,
+			Message:  "error on delete image event",
+			Internal: err,
+		}
+	}
+
+	err = record.Delete()
+	if err != nil {
+		return err
+	}
+
+	return c.NoContent(http.StatusNoContent)
 }

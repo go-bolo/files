@@ -89,6 +89,11 @@ func (p *FilePlugin) BindRoutes(app bolo.App) error {
 	routerFileAPI.GET("/:id/data", ctlFile.FindOneData)
 	routerFileAPI.POST("", ctlFile.UploadFile)
 
+	routerV2 := app.SetRouterGroup("iamges-v2-api", "/api/v2/image")
+	app.SetResource("images-v2", NewImageController(&ImageControllerConfiguration{
+		App: app,
+	}), routerV2)
+
 	return nil
 }
 

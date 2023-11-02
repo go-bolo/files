@@ -22,6 +22,10 @@ type FileListJSONResponse struct {
 	Records *[]*FileModel `json:"file"`
 }
 
+type FileCountJSONResponse struct {
+	bolo.BaseMetaResponse
+}
+
 type FileFindOneJSONResponse struct {
 	Record *FileModel `json:"file"`
 }
@@ -95,6 +99,10 @@ func (ctl *FileController) Query(c echo.Context) error {
 	return c.JSON(200, &resp)
 }
 
+func (ctl *FileController) Create(c echo.Context) error {
+	return ctl.UploadFile(c)
+}
+
 func (ctl *FileController) Update(c echo.Context) error {
 	var err error
 
@@ -146,6 +154,36 @@ func (ctl *FileController) Update(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, &resp)
+}
+
+func (ctl *FileController) Count(c echo.Context) error {
+	var err error
+	ctx := c.(*bolo.RequestContext)
+
+	var count int64
+	err = FileCountReq(&FileQueryOpts{
+		Count:  &count,
+		Limit:  ctx.GetLimit(),
+		Offset: ctx.GetOffset(),
+		C:      c,
+	})
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Debug("FileController error on count")
+		return &bolo.HTTPError{
+			Code:     http.StatusInternalServerError,
+			Message:  "FileController: error on count",
+			Internal: err,
+		}
+	}
+
+	ctx.Pager.Count = count
+
+	resp := FileCountJSONResponse{}
+	resp.Count = count
+
+	return c.JSON(200, &resp)
 }
 
 func (ctl *FileController) FindOne(c echo.Context) error {
@@ -259,6 +297,44 @@ func (ctl *FileController) UploadFile(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, &FileFindOneJSONResponse{Record: newFile})
+}
+
+func (ctl *FileController) Delete(c echo.Context) error {
+	app := ctl.App
+
+	id := c.Param("id")
+	ctx := c.(*bolo.RequestContext)
+
+	can := ctx.Can("delete_file")
+	if !can {
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
+
+	record := FileModel{}
+	err := FileFindOne(id, &record)
+	if err != nil {
+		return err
+	}
+
+	err, _ = app.GetEvents().Trigger("file-delete", map[string]any{
+		"echoContext": c,
+		"record":      &record,
+	})
+
+	if err != nil {
+		return &bolo.HTTPError{
+			Code:     http.StatusInternalServerError,
+			Message:  "error on delete image event",
+			Internal: err,
+		}
+	}
+
+	err = record.Delete()
+	if err != nil {
+		return err
+	}
+
+	return c.NoContent(http.StatusNoContent)
 }
 
 func FileQueryAndCountReq(opts *FileQueryOpts) error {

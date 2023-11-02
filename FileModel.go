@@ -180,6 +180,11 @@ func (m *FileModel) ResetURLs(app bolo.App) error {
 	return nil
 }
 
+func (m *FileModel) Delete() error {
+	db := bolo.GetDefaultDatabaseConnection()
+	return db.Unscoped().Delete(&m).Error
+}
+
 // GetFilesInField - Find files associated to record field
 func GetFilesInField(modelName, fieldName, modelID string, limit int) ([]*FileModel, error) {
 	db := bolo.GetDefaultDatabaseConnection()

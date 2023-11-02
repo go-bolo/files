@@ -27,23 +27,23 @@ func NewImageModel() *ImageModel {
 
 // Image model
 type ImageModel struct {
-	ID             uint64    `gorm:"column:id;primary_key"  json:"id"`
-	Label          *string   `gorm:"column:label;" json:"label"`
-	Description    *string   `gorm:"column:description;type:text" json:"description"`
-	Name           string    `gorm:"unique;column:name;type:varchar(255);not null" json:"name"`
-	Size           *int64    `gorm:"column:size;" json:"size"`
-	Encoding       string    `gorm:"column:encoding;type:varchar(255)" json:"encoding"`
-	Active         bool      `gorm:"column:active;type:tinyint(1);default:1" json:"active"`
-	Originalname   string    `gorm:"column:originalname;type:varchar(255)" json:"originalname"`
-	Mime           *string   `gorm:"column:mime;type:varchar(255)" json:"mime"`
-	Extension      *string   `gorm:"column:extension;type:varchar(255)" json:"extension"`
-	StorageName    string    `gorm:"column:storageName;type:varchar(255)" json:"storageName"`
-	IsLocalStorage bool      `gorm:"column:isLocalStorage;type:tinyint(1);default:1" json:"isLocalStorage"`
+	ID             uint64    `gorm:"column:id;primary_key" json:"id" filter:"param:id;type:number"`
+	Label          *string   `gorm:"column:label;" json:"label" filter:"param:label;type:string"`
+	Description    *string   `gorm:"column:description;type:text" json:"description" filter:"param:description;type:string"`
+	Name           string    `gorm:"unique;column:name;type:varchar(255);not null" json:"name" filter:"param:name;type:string"`
+	Size           *int64    `gorm:"column:size;" json:"size" filter:"param:size;type:number"`
+	Encoding       string    `gorm:"column:encoding;type:varchar(255)" json:"encoding" filter:"param:encoding;type:string"`
+	Active         bool      `gorm:"column:active;type:tinyint(1);default:1" json:"active" filter:"param:active;type:boolean"`
+	Originalname   string    `gorm:"column:originalname;type:varchar(255)" json:"originalname" filter:"param:originalname;type:string"`
+	Mime           *string   `gorm:"column:mime;type:varchar(255)" json:"mime" filter:"param:mime;type:string"`
+	Extension      *string   `gorm:"column:extension;type:varchar(255)" json:"extension" filter:"param:extension;type:string"`
+	StorageName    string    `gorm:"column:storageName;type:varchar(255)" json:"storageName" filter:"param:storageName;type:string"`
+	IsLocalStorage bool      `gorm:"column:isLocalStorage;type:tinyint(1);default:1" json:"isLocalStorage" filter:"param:isLocalStorage;type:boolean"`
 	URLsRaw        []byte    `gorm:"column:urls;type:blob;not null" json:"-"`
 	ExtraDataRaw   []byte    `gorm:"column:extraData;type:blob" json:"-"`
-	CreatedAt      time.Time `gorm:"column:createdAt;type:datetime;not null" json:"createdAt"`
-	UpdatedAt      time.Time `gorm:"column:updatedAt;type:datetime;not null" json:"updatedAt"`
-	CreatorID      *int64    `gorm:"index:creatorId;column:creatorId;type:int(11)" json:"creatorId"`
+	CreatedAt      time.Time `gorm:"column:createdAt;type:datetime;not null" json:"createdAt" filter:"param:createdAt;type:date"`
+	UpdatedAt      time.Time `gorm:"column:updatedAt;type:datetime;not null" json:"updatedAt" filter:"param:updatedAt;type:date"`
+	CreatorID      *int64    `gorm:"index:creatorId;column:creatorId;type:int(11)" json:"creatorId" filter:"param:creatorId;type:number"`
 	// Users          []User    `gorm:"joinForeignKey:creatorId;foreignKey:id" json:"usersList"`
 
 	URLs      ImageURL        `gorm:"-" json:"urls"`

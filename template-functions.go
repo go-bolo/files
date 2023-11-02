@@ -2,7 +2,7 @@ package files
 
 import "html/template"
 
-func imageTPLHelper(image *ImageModel, style, class, width string) template.HTML {
+func imageTPLHelper(image *ImageModel, style, class, width, attrs string) template.HTML {
 	html := ""
 
 	url := image.GetUrl(style)
@@ -24,17 +24,21 @@ func imageTPLHelper(image *ImageModel, style, class, width string) template.HTML
 			html += ` width="` + width + `"`
 		}
 
+		if attrs != "" {
+			html += ` ` + attrs + `"`
+		}
+
 		html += `>`
 	}
 
 	return template.HTML(html)
 }
 
-func imagesTPLHelper(images []*ImageModel, style, class, width string) template.HTML {
+func imagesTPLHelper(images []*ImageModel, style, class, width, attrs string) template.HTML {
 
 	if len(images) == 0 {
 		return template.HTML("")
 	}
 
-	return imageTPLHelper(images[0], style, class, width)
+	return imageTPLHelper(images[0], style, class, width, attrs)
 }

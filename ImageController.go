@@ -33,13 +33,11 @@ type ImageBodyRequest struct {
 	Record *ImageModel `json:"image"`
 }
 
-// type ImageTeaserTPL struct {
-// 	Ctx    *bolo.RequestContext
-// 	Record *Model
-// }
-
 func NewImageController(cfgs *ImageControllerConfiguration) *ImageController {
-	return &ImageController{App: cfgs.App}
+	return &ImageController{
+		App:                 cfgs.App,
+		UseExternalImageURL: cfgs.App.GetConfiguration().GetBoolF("IMAGE_USE_EXTERNAL_URL", false),
+	}
 }
 
 type ImageControllerConfiguration struct {
@@ -47,7 +45,8 @@ type ImageControllerConfiguration struct {
 }
 
 type ImageController struct {
-	App bolo.App
+	App                 bolo.App
+	UseExternalImageURL bool
 }
 
 func (ctl *ImageController) GetAvatar(c echo.Context) error {
@@ -255,8 +254,11 @@ func (ctl *ImageController) Count(c echo.Context) error {
 func (ctl *ImageController) FindOne(c echo.Context) error {
 	id := c.Param("id")
 	style := c.Param("style")
-
 	ctx := c.(*bolo.RequestContext)
+	filePlugin := ctx.App.GetPlugin("files").(*FilePlugin)
+	storageName := filePlugin.ImageStorageName
+	storage := filePlugin.GetStorage(storageName)
+	styles := filePlugin.ImageStyles
 
 	can := ctx.Can("find_image")
 	if !can {
@@ -312,12 +314,7 @@ func (ctl *ImageController) FindOne(c echo.Context) error {
 			originalPath := path.Join(os.TempDir(), record.Name) + "_original"
 			defer os.Remove(originalPath)
 
-			ctx := c.(*bolo.RequestContext)
-			filePlugin := ctx.App.GetPlugin("files").(*FilePlugin)
-			storageName := filePlugin.ImageStorageName
-			storage := filePlugin.GetStorage(storageName)
 			processor := filePlugin.Processor
-			styles := filePlugin.ImageStyles
 
 			tmpFilePath := path.Join(os.TempDir(), record.Name)
 
@@ -351,7 +348,11 @@ func (ctl *ImageController) FindOne(c echo.Context) error {
 		}
 	}
 
-	return c.Redirect(http.StatusFound, record.GetUrl(style))
+	if ctl.UseExternalImageURL {
+		return c.Redirect(http.StatusFound, record.GetUrl(style))
+	} else {
+		return storage.SendFileThroughHTTP(c, &record, style, styles[style].Format)
+	}
 }
 
 func (ctl *ImageController) FindOneData(c echo.Context) error {
@@ -469,4 +470,78 @@ func (ctl *ImageController) Delete(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusNoContent)
+}
+
+func (ctl *ImageController) ResetImageStyles(c echo.Context) error {
+	id := c.Param("id")
+	ctx := c.(*bolo.RequestContext)
+	filePlugin := ctx.App.GetPlugin("files").(*FilePlugin)
+	storageName := filePlugin.ImageStorageName
+	storage := filePlugin.GetStorage(storageName)
+	styles := filePlugin.ImageStyles
+
+	can := ctx.Can("find_image")
+	if !can {
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"id": id,
+	}).Debug("ImageController.ResetImageStyles id from params")
+
+	record := ImageModel{}
+	err := ImageFindOne(id, &record)
+	if err != nil {
+		return err
+	}
+
+	if record.ID == 0 {
+		logrus.WithFields(logrus.Fields{
+			"id": id,
+		}).Debug("ImageController.ResetImageStyles id record not found")
+
+		return echo.NotFoundHandler(c)
+	}
+
+	record.LoadData()
+
+	for style, _ := range record.URLs {
+		if style == "original" || style == "" {
+			continue
+		}
+
+		err := storage.DeleteImageStyle(&record, style, styles[style].Format)
+		if err != nil {
+			return err
+		}
+
+		delete(record.URLs, style)
+	}
+
+	err = record.ResetURLs(ctl.App)
+	if err != nil {
+		return err
+	}
+
+	baseURL := BuidFileBaseURL(ctl.App)
+	urls := record.URLs
+
+	for style, _ := range styles {
+		if style == "original" {
+			continue
+		}
+		urls[style] = baseURL + "/api/v1/image/" + style + "/" + record.Name
+	}
+
+	err = record.SetURLs(urls)
+	if err != nil {
+		return err
+	}
+
+	err = record.Save()
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, &ImageFindOneJSONResponse{Record: &record})
 }

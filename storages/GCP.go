@@ -5,12 +5,13 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
+	"net/http"
 	"os"
 
 	"cloud.google.com/go/storage"
 	"github.com/go-bolo/bolo"
 	files_dtos "github.com/go-bolo/files/dtos"
+	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"google.golang.org/api/option"
 )
@@ -24,7 +25,12 @@ type GCPCfg struct {
 }
 
 func NewGCP(cfg *GCPCfg) *GCP {
-	st := GCP{App: cfg.App, BucketName: cfg.BucketName, ObjectAttrs: cfg.ObjectAttrs}
+	st := GCP{
+		App:                 cfg.App,
+		BucketName:          cfg.BucketName,
+		ObjectAttrs:         cfg.ObjectAttrs,
+		UseExternalImageURL: cfg.App.GetConfiguration().GetBoolF("IMAGE_USE_EXTERNAL_URL", false),
+	}
 	if cfg.ObjectAttrs == nil {
 		st.ObjectAttrs = &storage.ObjectAttrs{
 			CacheControl: "max-age=31536000, public",
@@ -35,10 +41,11 @@ func NewGCP(cfg *GCPCfg) *GCP {
 }
 
 type GCP struct {
-	App           bolo.App
-	BucketName    string
-	ClientOptions option.ClientOption
-	ObjectAttrs   *storage.ObjectAttrs
+	App                 bolo.App
+	BucketName          string
+	ClientOptions       option.ClientOption
+	ObjectAttrs         *storage.ObjectAttrs
+	UseExternalImageURL bool
 }
 
 func (u *GCP) GetClientOptions() option.ClientOption {
@@ -50,8 +57,25 @@ func (u *GCP) GetClientOptions() option.ClientOption {
 	return option.WithCredentialsFile(cfgFile)
 }
 
-func (u *GCP) SendFileInHTTP(file files_dtos.FileDTO) error {
-	return nil
+func (u *GCP) SendFileThroughHTTP(c echo.Context, file files_dtos.FileDTO, style, format string) error {
+	bucket := u.BucketName
+	object, _ := u.GetUploadPathFromFile(style, format, file)
+
+	client, err := storage.NewClient(c.Request().Context(), u.GetClientOptions())
+	if err != nil {
+		return errors.Wrap(err, "storage.NewClient")
+	}
+	defer client.Close()
+
+	// check if file exists
+	r, err := client.Bucket(bucket).Object(object).NewReader(c.Request().Context())
+	if err != nil {
+		if !errors.Is(err, storage.ErrObjectNotExist) {
+			return err
+		}
+	}
+
+	return c.Stream(http.StatusOK, format, r)
 }
 
 func (u *GCP) GetUploadPathFromFile(imageStyle, format string, file files_dtos.FileDTO) (string, error) {
@@ -85,20 +109,6 @@ func (u *GCP) UploadFile(file files_dtos.FileDTO, tmpFilePath, destPath string) 
 		return errors.Wrap(err, "storage.NewClient")
 	}
 	defer client.Close()
-
-	// check if file exists
-	o := client.Bucket(bucket).Object(object)
-	_, err = o.Attrs(ctx)
-	if err != nil {
-		if err != storage.ErrObjectNotExist {
-			log.Println("<err>>", err)
-			return err
-		}
-	} else {
-		// file already exists
-		return nil
-	}
-
 	// Open local file.
 	f, err := os.Open(filePath)
 	if err != nil {
@@ -127,6 +137,27 @@ func (u *GCP) UploadFile(file files_dtos.FileDTO, tmpFilePath, destPath string) 
 }
 
 func (u *GCP) DestroyFile(file files_dtos.FileDTO) error {
+	return nil
+}
+
+func (u *GCP) DeleteImageStyle(file files_dtos.FileDTO, style, format string) error {
+	ctx := context.Background()
+	bucket := u.BucketName
+	object, _ := u.GetUploadPathFromFile(style, format, file)
+
+	client, err := storage.NewClient(ctx, u.GetClientOptions())
+	if err != nil {
+		return fmt.Errorf("GCP.DeleteImageStyle: storage.NewClient: %w", err)
+	}
+	defer client.Close()
+
+	err = client.Bucket(bucket).Object(object).Delete(ctx)
+	if err != nil {
+		if !errors.Is(err, storage.ErrObjectNotExist) {
+			return err
+		}
+	}
+
 	return nil
 }
 

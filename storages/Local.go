@@ -8,6 +8,7 @@ import (
 	"github.com/go-bolo/bolo"
 	files_dtos "github.com/go-bolo/files/dtos"
 	files_helpers "github.com/go-bolo/files/helpers"
+	"github.com/labstack/echo/v4"
 )
 
 type LocalCfg struct {
@@ -31,7 +32,7 @@ type Local struct {
 	DestinationPath string
 }
 
-func (s *Local) SendFileInHTTP(file files_dtos.FileDTO) error {
+func (s *Local) SendFileThroughHTTP(c echo.Context, file files_dtos.FileDTO, style, format string) error {
 	return nil
 }
 
@@ -71,5 +72,9 @@ func (s *Local) FileToUploadMetadata(file files_dtos.FileDTO) error {
 }
 
 func (s *Local) FileName(file files_dtos.FileDTO) (string, error) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (s *Local) DeleteImageStyle(file files_dtos.FileDTO, style, format string) error {
 	panic("not implemented") // TODO: Implement
 }

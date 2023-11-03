@@ -94,6 +94,8 @@ func (p *FilePlugin) BindRoutes(app bolo.App) error {
 		App: app,
 	}), routerV2)
 
+	routerV2.GET("/:id/reset-styles", ctl.ResetImageStyles)
+
 	routerFileV2 := app.SetRouterGroup("files-v2-api", "/api/v2/file")
 	app.SetResource("files-v2", NewFileController(&FileControllerConfiguration{
 		App: app,

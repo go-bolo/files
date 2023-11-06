@@ -72,6 +72,8 @@ func (u *GCP) SendFileThroughHTTP(c echo.Context, file files_dtos.FileDTO, style
 	if err != nil {
 		if !errors.Is(err, storage.ErrObjectNotExist) {
 			return err
+		} else {
+			return c.NoContent(http.StatusNotFound)
 		}
 	}
 

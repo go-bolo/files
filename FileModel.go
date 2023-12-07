@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-bolo/bolo"
+	"github.com/go-bolo/bolo/database"
 	"github.com/go-bolo/bolo/helpers"
 	"github.com/pkg/errors"
 )
@@ -17,52 +18,25 @@ func NewFileModel() *FileModel {
 	}
 }
 
-// FileModel -
-// SQL:
-// CREATE TABLE `files` (
-//
-//	`id` int(11) NOT NULL AUTO_INCREMENT,
-//	`label` varchar(255) DEFAULT NULL,
-//	`description` text,
-//	`name` varchar(255) NOT NULL,
-//	`size` int(11) DEFAULT NULL,
-//	`encoding` varchar(255) DEFAULT NULL,
-//	`active` tinyint(1) DEFAULT '1',
-//	`originalname` varchar(255) DEFAULT NULL,
-//	`mime` varchar(255) DEFAULT NULL,
-//	`extension` varchar(10) DEFAULT NULL,
-//	`storageName` varchar(255) DEFAULT NULL,
-//	`isLocalStorage` tinyint(1) DEFAULT '1',
-//	`urls` blob NOT NULL,
-//	`extraData` blob,
-//	`createdAt` datetime NOT NULL,
-//	`updatedAt` datetime NOT NULL,
-//	`creatorId` int(11) DEFAULT NULL,
-//	PRIMARY KEY (`id`),
-//	UNIQUE KEY `name` (`name`),
-//	KEY `creatorId` (`creatorId`),
-//	CONSTRAINT `files_ibfk_1` FOREIGN KEY (`creatorId`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-//
-// );
 type FileModel struct {
 	ID uint64 `gorm:"column:id;primary_key"  json:"id" filter:"param:id;type:number"`
 
-	Label          *string   `gorm:"column:label;" json:"label" filter:"param:id;type:number"`
-	Description    *string   `gorm:"column:description;type:text" json:"description" filter:"param:description;type:string"`
-	Name           string    `gorm:"unique;column:name;type:varchar(255);not null" json:"name" filter:"param:name;type:string"`
-	Size           *int64    `gorm:"column:size;" json:"size" filter:"param:size;type:number"`
-	Encoding       string    `gorm:"column:encoding;type:varchar(255)" json:"encoding" filter:"param:encoding;type:string"`
-	Active         bool      `gorm:"column:active;type:tinyint(1);default:1" json:"active" filter:"param:active;type:boolean"`
-	Originalname   string    `gorm:"column:originalname;type:varchar(255)" json:"originalname" filter:"param:originalname;type:string"`
-	Mime           *string   `gorm:"column:mime;type:varchar(255)" json:"mime" filter:"param:mime;type:string"`
-	Extension      *string   `gorm:"column:extension;type:varchar(10)" json:"extension" filter:"param:extension;type:string"`
-	StorageName    string    `gorm:"column:storageName;type:varchar(255)" json:"storageName" filter:"param:storageName;type:string"`
-	IsLocalStorage bool      `gorm:"column:isLocalStorage;type:tinyint(1);default:1" json:"isLocalStorage" filter:"param:isLocalStorage;type:boolean"`
-	URLsRaw        []byte    `gorm:"column:urls;type:blob;not null" json:"-"`
-	ExtraDataRaw   []byte    `gorm:"column:extraData;type:blob" json:"-"`
-	CreatedAt      time.Time `gorm:"column:createdAt;type:datetime;not null" json:"createdAt" filter:"param:createdAt;type:date"`
-	UpdatedAt      time.Time `gorm:"column:updatedAt;type:datetime;not null" json:"updatedAt" filter:"param:updatedAt;type:date"`
-	CreatorID      *int64    `gorm:"column:creatorId;type:int(11)" json:"creatorId" filter:"param:creatorId;type:number"`
+	Label          *string            `gorm:"column:label;" json:"label" filter:"param:id;type:number"`
+	Description    *string            `gorm:"column:description;type:text" json:"description" filter:"param:description;type:string"`
+	Name           string             `gorm:"unique;column:name;type:varchar(255);not null" json:"name" filter:"param:name;type:string"`
+	Size           *int64             `gorm:"column:size;" json:"size" filter:"param:size;type:number"`
+	Encoding       string             `gorm:"column:encoding;type:varchar(255)" json:"encoding" filter:"param:encoding;type:string"`
+	Active         bool               `gorm:"column:active;type:tinyint(1);default:1" json:"active" filter:"param:active;type:boolean"`
+	Originalname   string             `gorm:"column:originalname;type:varchar(255)" json:"originalname" filter:"param:originalname;type:string"`
+	Mime           *string            `gorm:"column:mime;type:varchar(255)" json:"mime" filter:"param:mime;type:string"`
+	Extension      *string            `gorm:"column:extension;type:varchar(10)" json:"extension" filter:"param:extension;type:string"`
+	StorageName    string             `gorm:"column:storageName;type:varchar(255)" json:"storageName" filter:"param:storageName;type:string"`
+	IsLocalStorage bool               `gorm:"column:isLocalStorage;type:tinyint(1);default:1" json:"isLocalStorage" filter:"param:isLocalStorage;type:boolean"`
+	URLsRaw        database.JSONField `gorm:"column:urls;type:blob;not null" json:"-"`
+	ExtraDataRaw   database.JSONField `gorm:"column:extraData;type:blob" json:"-"`
+	CreatedAt      time.Time          `gorm:"column:createdAt;type:datetime;not null" json:"createdAt" filter:"param:createdAt;type:date"`
+	UpdatedAt      time.Time          `gorm:"column:updatedAt;type:datetime;not null" json:"updatedAt" filter:"param:updatedAt;type:date"`
+	CreatorID      *int64             `gorm:"column:creatorId;type:int(11)" json:"creatorId" filter:"param:creatorId;type:number"`
 
 	URLs      ImageURL       `gorm:"-" json:"urls"`
 	ExtraData *FileExtraData `gorm:"-" json:"extraData"`

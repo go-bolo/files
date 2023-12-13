@@ -114,6 +114,7 @@ func (p *FilePlugin) setTemplateFunctions(app bolo.App) error {
 func (p *FilePlugin) GetMigrations() []*bolo.Migration {
 	return []*bolo.Migration{
 		migrations.GetInitMigration(),
+		migrations.GetMigration2(),
 	}
 }
 

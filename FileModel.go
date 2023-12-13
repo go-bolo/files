@@ -372,8 +372,6 @@ func AddFilesInFieldByIDs(modelId string, fileIds []string, cfg FieldConfigurati
 		return err
 	}
 
-	modelIdn, _ := strconv.ParseInt(modelId, 10, 64)
-
 	// create assocs
 	assocsToCreate := []FileAssocsModel{}
 	for i := range fileIds {
@@ -390,7 +388,7 @@ func AddFilesInFieldByIDs(modelId string, fileIds []string, cfg FieldConfigurati
 			r := FileAssocsModel{
 				ModelName: cfg.GetModelName(),
 				Field:     cfg.GetFieldName(),
-				ModelID:   modelIdn,
+				ModelID:   modelId,
 				FileID:    int64(orderedFile.ID),
 				Order:     i,
 			}

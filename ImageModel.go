@@ -528,8 +528,6 @@ func AddImagesInFieldByIDs(modelId string, imageIds []string, cfg FieldConfigura
 		return err
 	}
 
-	modelIdn, _ := strconv.ParseInt(modelId, 10, 64)
-
 	// create assocs
 	assocsToCreate := []ImageAssocsModel{}
 	for i := range imageIds {
@@ -546,7 +544,7 @@ func AddImagesInFieldByIDs(modelId string, imageIds []string, cfg FieldConfigura
 			r := ImageAssocsModel{
 				ModelName: cfg.GetModelName(),
 				Field:     cfg.GetFieldName(),
-				ModelID:   modelIdn,
+				ModelID:   modelId,
 				ImageID:   int64(orderedImage.ID),
 				Order:     i,
 			}

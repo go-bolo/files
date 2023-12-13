@@ -11,7 +11,7 @@ type ImageAssocsModel struct {
 	models.Base
 
 	ModelName string `gorm:"column:modelName;type:varchar(255);" json:"modelName"`
-	ModelID   int64  `gorm:"column:modelId;type:bigint(20);" json:"modelId"`
+	ModelID   string `gorm:"column:modelId;type:varchar(100);" json:"modelId"`
 	Field     string `gorm:"column:field;type:varchar(255);" json:"field"`
 	Order     int    `gorm:"column:order;type:int(11);" json:"order"`
 

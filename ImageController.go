@@ -322,7 +322,7 @@ func (ctl *ImageController) FindOne(c echo.Context) error {
 				"width":  strconv.Itoa(styles[style].Width),
 				"height": strconv.Itoa(styles[style].Height),
 				"url":    url,
-				"format": styles[style].Format,
+				"format": filePlugin.ImageFormat,
 			}
 
 			err = processor.Resize(originalPath, tmpFilePath, record.Name, resizeOpts)
@@ -330,7 +330,7 @@ func (ctl *ImageController) FindOne(c echo.Context) error {
 				return err
 			}
 
-			dest, _ := storage.GetUploadPathFromFile(style, styles[style].Format, &record)
+			dest, _ := storage.GetUploadPathFromFile(style, filePlugin.ImageFormat, &record)
 
 			err = storage.UploadFile(&record, tmpFilePath, dest)
 			if err != nil {
@@ -340,6 +340,7 @@ func (ctl *ImageController) FindOne(c echo.Context) error {
 			defer os.Remove(tmpFilePath)
 
 			record.URLs[style], _ = storage.GetUrlFromFile(style, &record)
+
 			record.SetURLs(record.URLs)
 			err = record.Save()
 			if err != nil {
@@ -351,7 +352,7 @@ func (ctl *ImageController) FindOne(c echo.Context) error {
 	if ctl.UseExternalImageURL {
 		return c.Redirect(http.StatusFound, record.GetUrl(style))
 	} else {
-		return storage.SendFileThroughHTTP(c, &record, style, styles[style].Format)
+		return storage.SendFileThroughHTTP(c, &record, style, filePlugin.ImageFormat)
 	}
 }
 
@@ -510,7 +511,7 @@ func (ctl *ImageController) ResetImageStyles(c echo.Context) error {
 			continue
 		}
 
-		err := storage.DeleteImageStyle(&record, style, styles[style].Format)
+		err := storage.DeleteImageStyle(&record, style, filePlugin.ImageFormat)
 		if err != nil {
 			return err
 		}

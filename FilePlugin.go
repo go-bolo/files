@@ -24,6 +24,7 @@ type FilePlugin struct {
 
 	Processor files_processor.FileProcessor
 
+	ImageFormat string
 	ImageStyles map[string]ImageStyleCfg
 }
 
@@ -120,6 +121,7 @@ func (p *FilePlugin) GetMigrations() []*bolo.Migration {
 
 type FilePluginCfgs struct {
 	Storages         map[string]Storager
+	ImageFormat      string
 	ImageStyles      map[string]ImageStyleCfg
 	FileStorageName  string
 	ImageStorageName string
@@ -131,8 +133,6 @@ type FilePluginCfgs struct {
 type ImageStyleCfg struct {
 	Width  int
 	Height int
-	// image format to convert with lowercase like jpg. Default: webp
-	Format string
 }
 
 func NewPlugin(cfgs *FilePluginCfgs) *FilePlugin {
@@ -140,6 +140,7 @@ func NewPlugin(cfgs *FilePluginCfgs) *FilePlugin {
 		Name:             "files",
 		FileStorageName:  "local",
 		ImageStorageName: "local",
+		ImageFormat:      cfgs.ImageFormat,
 		ImageStyles:      cfgs.ImageStyles,
 		MaxImageWidth:    2560,
 		MaxImageHeight:   1700,
@@ -164,6 +165,10 @@ func NewPlugin(cfgs *FilePluginCfgs) *FilePlugin {
 
 	if cfgs.MaxImageHeight != 0 {
 		p.MaxImageHeight = cfgs.MaxImageHeight
+	}
+
+	if p.ImageFormat == "" {
+		p.ImageFormat = "png"
 	}
 
 	return &p

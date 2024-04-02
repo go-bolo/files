@@ -1,6 +1,7 @@
 package files
 
 import (
+	"mime"
 	"os"
 	"strconv"
 	"strings"
@@ -72,17 +73,9 @@ func UploadImageFromLocalhost(fileName string, description string, filePath stri
 	fileUUID := uuid.New().String()
 	styles := filePlugin.ImageStyles
 
-	mimeType, extension, _ := files_helpers.GetFileExtensionAndMimeType(filePath)
-	if extension != "" {
-		record.Extension = &extension
-		record.Mime = &mimeType
-	} else {
-		fileNameSplits := strings.Split(fileName, ".")
-		if len(fileNameSplits) > 1 {
-			ext := fileNameSplits[len(fileNameSplits)-1]
-			record.Extension = &ext
-			fileUUID += "." + ext
-		}
+	if filePlugin.ImageFormat != "" {
+		defaultExtension = filePlugin.ImageFormat
+		defaultMime = mime.TypeByExtension("." + filePlugin.ImageFormat)
 	}
 
 	fileStatus, err := os.Stat(filePath)
@@ -99,9 +92,6 @@ func UploadImageFromLocalhost(fileName string, description string, filePath stri
 	record.StorageName = storageName
 	record.Extension = &defaultExtension
 	record.Mime = &defaultMime
-	record.Name = fileUUID + "." + defaultExtension
-
-	originalDest, _ := storage.GetUploadPathFromFile("original", "", record)
 
 	var resizeOpts files_processor.Options
 
@@ -111,8 +101,12 @@ func UploadImageFromLocalhost(fileName string, description string, filePath stri
 		resizeOpts = files_processor.Options{
 			"width":  strconv.Itoa(int(style.Width)),
 			"height": strconv.Itoa(int(style.Height)),
-			"format": style.Format,
 		}
+
+		if filePlugin.ImageFormat != "" {
+			resizeOpts["format"] = filePlugin.ImageFormat
+		}
+
 	} else {
 		// Default:
 		resizeOpts = files_processor.Options{
@@ -120,6 +114,12 @@ func UploadImageFromLocalhost(fileName string, description string, filePath stri
 			"height": strconv.Itoa(int(filePlugin.MaxImageHeight)),
 		}
 	}
+
+	if filePlugin.ImageFormat != "" {
+		record.Name = fileUUID + "." + filePlugin.ImageFormat
+	}
+
+	originalDest, _ := storage.GetUploadPathFromFile("original", filePlugin.ImageFormat, record)
 
 	err = processor.Resize(filePath, filePath, record.Name, resizeOpts)
 	if err != nil {

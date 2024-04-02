@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-bolo/bolo"
@@ -183,7 +184,9 @@ func (m *ImageModel) ResetURLs(app bolo.App) error {
 		if style == "original" {
 			continue
 		}
+
 		urls[style] = baseURL + "/api/v1/image/" + style + "/" + m.Name
+
 	}
 
 	m.SetURLs(urls)
@@ -200,14 +203,20 @@ func (m *ImageModel) Delete() error {
 func ImageFindOne(id string, record *ImageModel) error {
 	db := bolo.GetDefaultDatabaseConnection()
 
+	name := id
+
+	if strings.Contains(name, ".") {
+		name = strings.Split(name, ".")[0]
+	}
+
 	n, err := strconv.ParseInt(id, 10, 64)
 	if err != nil || n == 0 {
 		return db.
-			Where("name = ?", id).
+			Where("name LIKE ?", name+"%").
 			First(record).Error
 	} else {
 		return db.
-			Where("id = ? OR name = ?", id, id).
+			Where("id = ? OR name LIKE ?", id, name+"%").
 			First(record).Error
 	}
 }

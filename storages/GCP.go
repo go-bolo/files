@@ -86,18 +86,16 @@ func (u *GCP) GetUploadPathFromFile(imageStyle, format string, file files_dtos.F
 
 	name := file.GetFileName()
 
-	if imageStyle != "original" && format != "" {
-		name = name + "." + format
-	}
-
-	return datePrefix + "/" + imageStyle + "/" + file.GetFileName(), nil
+	return datePrefix + "/" + imageStyle + "/" + name, nil
 }
 
 func (u *GCP) GetUrlFromFile(imageStyle string, file files_dtos.FileDTO) (string, error) {
 	createdAt := file.GetCreatedAt()
 	datePrefix := createdAt.Format("2006/01/02")
 
-	return gcsDomain + "/" + u.BucketName + "/" + datePrefix + "/" + imageStyle + "/" + file.GetFileName(), nil
+	name := file.GetFileName()
+
+	return gcsDomain + "/" + u.BucketName + "/" + datePrefix + "/" + imageStyle + "/" + name, nil
 }
 
 func (u *GCP) UploadFile(file files_dtos.FileDTO, tmpFilePath, destPath string) error {

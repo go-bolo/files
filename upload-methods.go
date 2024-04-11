@@ -102,11 +102,6 @@ func UploadImageFromLocalhost(fileName string, description string, filePath stri
 			"width":  strconv.Itoa(int(style.Width)),
 			"height": strconv.Itoa(int(style.Height)),
 		}
-
-		if filePlugin.ImageFormat != "" {
-			resizeOpts["format"] = filePlugin.ImageFormat
-		}
-
 	} else {
 		// Default:
 		resizeOpts = files_processor.Options{
@@ -117,6 +112,11 @@ func UploadImageFromLocalhost(fileName string, description string, filePath stri
 
 	if filePlugin.ImageFormat != "" {
 		record.Name = fileUUID + "." + filePlugin.ImageFormat
+		resizeOpts["format"] = filePlugin.ImageFormat
+	}
+
+	if resizeOpts["format"] == "" {
+		resizeOpts["format"] = defaultExtension
 	}
 
 	originalDest, _ := storage.GetUploadPathFromFile("original", filePlugin.ImageFormat, record)

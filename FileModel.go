@@ -9,6 +9,7 @@ import (
 	"github.com/go-bolo/bolo"
 	"github.com/go-bolo/bolo/database"
 	"github.com/go-bolo/bolo/helpers"
+	files_database "github.com/go-bolo/files/database"
 	"github.com/pkg/errors"
 )
 
@@ -38,8 +39,8 @@ type FileModel struct {
 	UpdatedAt      time.Time          `gorm:"column:updatedAt;type:datetime;not null" json:"updatedAt" filter:"param:updatedAt;type:date"`
 	CreatorID      *int64             `gorm:"column:creatorId;type:int(11)" json:"creatorId" filter:"param:creatorId;type:number"`
 
-	URLs      ImageURL       `gorm:"-" json:"urls"`
-	ExtraData *FileExtraData `gorm:"-" json:"extraData"`
+	URLs      files_database.ImageURLsField `gorm:"-" json:"urls"`
+	ExtraData *FileExtraData                `gorm:"-" json:"extraData"`
 
 	LinkPermanent string `gorm:"-" json:"linkPermanent"`
 }
@@ -61,7 +62,11 @@ func (m *FileModel) GetUrl(style string) string {
 	return m.URLs["original"]
 }
 
-func (m *FileModel) SetURLs(urls ImageURL) error {
+func (m *FileModel) GetURLs() files_database.ImageURLsField {
+	return m.URLs
+}
+
+func (m *FileModel) SetURLs(urls files_database.ImageURLsField) error {
 	m.URLs = urls
 	m.URLsRaw = []byte(urls.ToJSON())
 
@@ -117,16 +122,6 @@ func (m *FileModel) LoadTeaser() error {
 }
 
 func (m *FileModel) RefreshURLs() {
-	if len(m.URLsRaw) > 0 {
-		var url ImageURL
-		err := json.Unmarshal(m.URLsRaw, &url)
-		if err != nil {
-			log.Println("Error on parse file url", m.URLsRaw)
-		} else {
-			m.URLs = url
-		}
-	}
-
 	if len(m.ExtraDataRaw) > 0 {
 		var extraData FileExtraData
 		err := json.Unmarshal(m.ExtraDataRaw, &extraData)
@@ -145,7 +140,7 @@ func (m *FileModel) ResetURLs(app bolo.App) error {
 
 	urls := m.URLs
 	if urls == nil {
-		urls = ImageURL{}
+		urls = files_database.ImageURLsField{}
 		urls["original"], _ = storage.GetUrlFromFile("original", m)
 	}
 
@@ -179,17 +174,6 @@ func GetFilesInField(modelName, fieldName, modelID string, limit int) ([]*FileMo
 	}
 
 	for i := range files {
-		if len(files[i].URLsRaw) > 0 {
-			var url ImageURL
-			err := json.Unmarshal(files[i].URLsRaw, &url)
-			if err != nil {
-				log.Println("Error on parse file url", files[i].URLsRaw)
-				continue
-			}
-
-			files[i].URLs = url
-		}
-
 		if len(files[i].ExtraDataRaw) > 0 {
 			var extraData FileExtraData
 			err := json.Unmarshal(files[i].ExtraDataRaw, &extraData)
@@ -224,7 +208,7 @@ func GetFilesInRecord(modelName string, modelID string) ([]FileModel, error) {
 
 	for i := range files {
 		if len(files[i].URLsRaw) > 0 {
-			var url ImageURL
+			var url files_database.ImageURLsField
 			err := json.Unmarshal(files[i].URLsRaw, &url)
 			if err != nil {
 				log.Println("Error on parse file url", string(files[i].URLsRaw))

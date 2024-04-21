@@ -25,6 +25,8 @@ type FieldConfigurationInterface interface {
 	SetModelName(name string) error
 	GetFieldName() string
 	SetFieldName(name string) error
+	GetDeleteImageOnRemove() bool
+	SetDeleteImageOnRemove(v bool) error
 
 	Clear(modelId string) error
 	ClearField(modelId string) error
@@ -32,12 +34,13 @@ type FieldConfigurationInterface interface {
 
 // File field configuration to associate contents with terms
 type FieldConfiguration struct {
-	DB                *gorm.DB
-	AssociationModel  interface{}
-	ModelToAssociate  interface{}
-	FormFieldMultiple bool
-	ModelName         string
-	FieldName         string
+	DB                  *gorm.DB
+	AssociationModel    interface{}
+	ModelToAssociate    interface{}
+	FormFieldMultiple   bool
+	ModelName           string
+	FieldName           string
+	DeleteImageOnRemove bool
 }
 
 func (f *FieldConfiguration) IsFormFieldMultiple() bool {
@@ -64,6 +67,15 @@ func (f *FieldConfiguration) GetFieldName() string {
 
 func (f *FieldConfiguration) SetFieldName(name string) error {
 	f.FieldName = name
+	return nil
+}
+
+func (f *FieldConfiguration) GetDeleteImageOnRemove() bool {
+	return f.DeleteImageOnRemove
+}
+
+func (f *FieldConfiguration) SetDeleteImageOnRemove(v bool) error {
+	f.DeleteImageOnRemove = v
 	return nil
 }
 

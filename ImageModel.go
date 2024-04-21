@@ -12,6 +12,7 @@ import (
 	"github.com/go-bolo/bolo"
 	"github.com/go-bolo/bolo/database"
 	"github.com/go-bolo/bolo/helpers"
+	files_database "github.com/go-bolo/files/database"
 	"github.com/labstack/echo/v4"
 
 	"github.com/pkg/errors"
@@ -29,37 +30,37 @@ func NewImageModel() *ImageModel {
 
 // Image model
 type ImageModel struct {
-	ID             uint64             `gorm:"column:id;primary_key" json:"id" filter:"param:id;type:number"`
-	Label          *string            `gorm:"column:label;" json:"label" filter:"param:label;type:string"`
-	Description    *string            `gorm:"column:description;type:text" json:"description" filter:"param:description;type:string"`
-	Name           string             `gorm:"unique;column:name;type:varchar(255);not null" json:"name" filter:"param:name;type:string"`
-	Size           *int64             `gorm:"column:size;" json:"size" filter:"param:size;type:number"`
-	Encoding       string             `gorm:"column:encoding;type:varchar(255)" json:"encoding" filter:"param:encoding;type:string"`
-	Active         bool               `gorm:"column:active;type:tinyint(1);default:1" json:"active" filter:"param:active;type:boolean"`
-	Originalname   string             `gorm:"column:originalname;type:varchar(255)" json:"originalname" filter:"param:originalname;type:string"`
-	Mime           *string            `gorm:"column:mime;type:varchar(255)" json:"mime" filter:"param:mime;type:string"`
-	Extension      *string            `gorm:"column:extension;type:varchar(255)" json:"extension" filter:"param:extension;type:string"`
-	StorageName    string             `gorm:"column:storageName;type:varchar(255)" json:"storageName" filter:"param:storageName;type:string"`
-	IsLocalStorage bool               `gorm:"column:isLocalStorage;type:tinyint(1);default:1" json:"isLocalStorage" filter:"param:isLocalStorage;type:boolean"`
-	URLsRaw        database.JSONField `gorm:"column:urls;type:blob;not null" json:"-"`
-	ExtraDataRaw   database.JSONField `gorm:"column:extraData;type:blob" json:"-"`
-	CreatedAt      time.Time          `gorm:"column:createdAt;type:datetime;not null" json:"createdAt" filter:"param:createdAt;type:date"`
-	UpdatedAt      time.Time          `gorm:"column:updatedAt;type:datetime;not null" json:"updatedAt" filter:"param:updatedAt;type:date"`
-	CreatorID      *int64             `gorm:"index:creatorId;column:creatorId;type:int(11)" json:"creatorId" filter:"param:creatorId;type:number"`
+	ID             uint64  `gorm:"column:id;primary_key" json:"id" filter:"param:id;type:number"`
+	Label          *string `gorm:"column:label;" json:"label" filter:"param:label;type:string"`
+	Description    *string `gorm:"column:description;type:text" json:"description" filter:"param:description;type:string"`
+	Name           string  `gorm:"unique;column:name;type:varchar(255);not null" json:"name" filter:"param:name;type:string"`
+	Size           *int64  `gorm:"column:size;" json:"size" filter:"param:size;type:number"`
+	Encoding       string  `gorm:"column:encoding;type:varchar(255)" json:"encoding" filter:"param:encoding;type:string"`
+	Active         bool    `gorm:"column:active;type:tinyint(1);default:1" json:"active" filter:"param:active;type:boolean"`
+	Originalname   string  `gorm:"column:originalname;type:varchar(255)" json:"originalname" filter:"param:originalname;type:string"`
+	Mime           *string `gorm:"column:mime;type:varchar(255)" json:"mime" filter:"param:mime;type:string"`
+	Extension      *string `gorm:"column:extension;type:varchar(255)" json:"extension" filter:"param:extension;type:string"`
+	StorageName    string  `gorm:"column:storageName;type:varchar(255)" json:"storageName" filter:"param:storageName;type:string"`
+	IsLocalStorage bool    `gorm:"column:isLocalStorage;type:tinyint(1);default:1" json:"isLocalStorage" filter:"param:isLocalStorage;type:boolean"`
+	// URLsRaw        database.JSONField `gorm:"column:urls;type:blob;not null" json:"-"`
+	ExtraDataRaw database.JSONField `gorm:"column:extraData;type:blob" json:"-"`
+	CreatedAt    time.Time          `gorm:"column:createdAt;type:datetime;not null" json:"createdAt" filter:"param:createdAt;type:date"`
+	UpdatedAt    time.Time          `gorm:"column:updatedAt;type:datetime;not null" json:"updatedAt" filter:"param:updatedAt;type:date"`
+	CreatorID    *int64             `gorm:"index:creatorId;column:creatorId;type:int(11)" json:"creatorId" filter:"param:creatorId;type:number"`
 	// Users          []User    `gorm:"joinForeignKey:creatorId;foreignKey:id" json:"usersList"`
 
-	URLs      ImageURL        `gorm:"-" json:"urls"`
-	ExtraData *ImageExtraData `gorm:"-" json:"extraData"`
+	URLs      files_database.ImageURLsField `gorm:"column:urls;type:blob;not null" json:"urls"`
+	ExtraData *ImageExtraData               `gorm:"-" json:"extraData"`
 
 	LinkPermanent string `gorm:"-" json:"linkPermanent"`
 }
 
-type ImageURL map[string]string
+// type ImageURL map[string]string
 
-func (m *ImageURL) ToJSON() string {
-	jsonString, _ := json.Marshal(m)
-	return string(jsonString)
-}
+// func (m *ImageURL) ToJSON() string {
+// 	jsonString, _ := json.Marshal(m)
+// 	return string(jsonString)
+// }
 
 type ImageExtraData struct {
 	Keys map[string]string
@@ -82,9 +83,12 @@ func (m *ImageModel) GetUrl(style string) string {
 	return m.URLs["original"]
 }
 
-func (m *ImageModel) SetURLs(urls ImageURL) error {
+func (m *ImageModel) GetURLs() files_database.ImageURLsField {
+	return m.URLs
+}
+
+func (m *ImageModel) SetURLs(urls files_database.ImageURLsField) error {
 	m.URLs = urls
-	m.URLsRaw = []byte(urls.ToJSON())
 
 	return nil
 }
@@ -146,16 +150,6 @@ func (m *ImageModel) LoadTeaser() error {
 }
 
 func (m *ImageModel) RefreshURLs() {
-	if len(m.URLsRaw) > 0 {
-		var url ImageURL
-		err := json.Unmarshal(m.URLsRaw, &url)
-		if err != nil {
-			log.Println("Error on parse image url", m.URLsRaw)
-		} else {
-			m.URLs = url
-		}
-	}
-
 	if len(m.ExtraDataRaw) > 0 {
 		var extraData ImageExtraData
 		err := json.Unmarshal(m.ExtraDataRaw, &extraData)
@@ -176,7 +170,7 @@ func (m *ImageModel) ResetURLs(app bolo.App) error {
 
 	urls := m.URLs
 	if urls == nil {
-		urls = ImageURL{}
+		urls = files_database.ImageURLsField{}
 		urls["original"], _ = storage.GetUrlFromFile("original", m)
 	}
 
@@ -265,17 +259,6 @@ func GetImagesInField(modelName, fieldName, modelID string, limit int) ([]*Image
 	}
 
 	for i := range images {
-		if len(images[i].URLsRaw) > 0 {
-			var url ImageURL
-			err := json.Unmarshal(images[i].URLsRaw, &url)
-			if err != nil {
-				log.Println("Error on parse image url", images[i].URLsRaw)
-				continue
-			}
-
-			images[i].URLs = url
-		}
-
 		if len(images[i].ExtraDataRaw) > 0 {
 			var extraData ImageExtraData
 			err := json.Unmarshal(images[i].ExtraDataRaw, &extraData)
@@ -310,17 +293,6 @@ func GetImagesInRecord(modelName string, modelID string) ([]ImageModel, error) {
 	}
 
 	for i := range images {
-		if len(images[i].URLsRaw) > 0 {
-			var url ImageURL
-			err := json.Unmarshal(images[i].URLsRaw, &url)
-			if err != nil {
-				log.Println("Error on parse image url", string(images[i].URLsRaw))
-				continue
-			}
-
-			images[i].URLs = url
-		}
-
 		if len(images[i].ExtraDataRaw) > 0 {
 			var extraData ImageExtraData
 			err := json.Unmarshal(images[i].ExtraDataRaw, &extraData)
@@ -505,6 +477,10 @@ func UpdateFieldImagesById(modelId string, imageIds []string, cfg FieldConfigura
 		if !contains {
 			itemsToAdd = append(itemsToAdd, imageIds[i])
 		}
+	}
+
+	if len(itemsToDelete) > 0 {
+
 	}
 
 	// delete old items

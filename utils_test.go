@@ -5,6 +5,7 @@ import (
 
 	"github.com/brianvoe/gofakeit"
 	"github.com/go-bolo/bolo"
+	files_database "github.com/go-bolo/files/database"
 	files_storages "github.com/go-bolo/files/storages"
 	"github.com/pkg/errors"
 )
@@ -116,7 +117,7 @@ func GetImageModelStub() ImageModel {
 		Extension:    &extension,
 	}
 
-	r.SetURLs(ImageURL{
+	r.SetURLs(files_database.ImageURLsField{
 		"original":  gofakeit.Word(),
 		"thumbnail": gofakeit.Word(),
 		"medium":    gofakeit.Word(),
@@ -144,7 +145,7 @@ func GetFileModelStub() FileModel {
 		Extension:    &extension,
 	}
 
-	r.SetURLs(ImageURL{
+	r.SetURLs(files_database.ImageURLsField{
 		"original": gofakeit.Word(),
 	})
 

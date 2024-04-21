@@ -137,6 +137,8 @@ func (u *GCP) UploadFile(file files_dtos.FileDTO, tmpFilePath, destPath string) 
 }
 
 func (u *GCP) DestroyFile(file files_dtos.FileDTO) error {
+	// file.
+
 	return nil
 }
 

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-bolo/bolo"
+	files_database "github.com/go-bolo/files/database"
 	files_helpers "github.com/go-bolo/files/helpers"
 	files_processor "github.com/go-bolo/files/processor"
 	"github.com/google/uuid"
@@ -57,7 +58,7 @@ func UploadFileFromLocalhost(fileName string, description string, filePath strin
 		return errors.Wrap(err, "UploadFileFromLocalhost Error on upload file")
 	}
 
-	urls := ImageURL{}
+	urls := files_database.ImageURLsField{}
 	urls["original"], _ = storage.GetUrlFromFile("original", record)
 
 	record.SetURLs(urls)

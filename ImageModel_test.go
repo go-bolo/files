@@ -4,6 +4,7 @@ import (
 	"log"
 	"testing"
 
+	"github.com/go-bolo/bolo"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
@@ -12,6 +13,10 @@ func TestUpdateFieldImagesById_Multiple(t *testing.T) {
 	assert := assert.New(t)
 	app := GetAppInstance()
 	var cfg = NewImageFieldConfiguration("content", "gallery")
+
+	ctx := bolo.NewRequestContext(&bolo.RequestContextOpts{
+		App: app,
+	})
 
 	t.Run("Should create a new image and associate", func(t *testing.T) {
 		modelId := "11"
@@ -27,7 +32,7 @@ func TestUpdateFieldImagesById_Multiple(t *testing.T) {
 
 		imageIds := []string{fakeImages[0].GetIDString(), fakeImages[1].GetIDString()}
 
-		err = UpdateFieldImagesById(modelId, imageIds, cfg)
+		err = UpdateFieldImagesById(ctx, modelId, imageIds, cfg)
 		assert.Nil(err)
 
 		afterSaveImages := []ImageModel{}
@@ -55,7 +60,7 @@ func TestUpdateFieldImagesById_Multiple(t *testing.T) {
 		oldImageIds := []string{fakeImages[0].GetIDString()}
 		imageIds := []string{fakeImages[1].GetIDString(), fakeImages[2].GetIDString()}
 
-		err = UpdateFieldImagesById(modelId, oldImageIds, cfg)
+		err = UpdateFieldImagesById(ctx, modelId, oldImageIds, cfg)
 		assert.Nil(err)
 
 		afterSave1Images := []ImageModel{}
@@ -64,7 +69,7 @@ func TestUpdateFieldImagesById_Multiple(t *testing.T) {
 		assert.Equal(1, len(afterSave1Images))
 		assert.Equal(oldImageIds[0], afterSave1Images[0].GetIDString())
 
-		err = UpdateFieldImagesById(modelId, imageIds, cfg)
+		err = UpdateFieldImagesById(ctx, modelId, imageIds, cfg)
 		assert.Nil(err)
 
 		afterSave2Images := []ImageModel{}
@@ -91,7 +96,7 @@ func TestUpdateFieldImagesById_Multiple(t *testing.T) {
 
 		imageIds := []string{fakeImages[2].GetIDString(), fakeImages[3].GetIDString(), fakeImages[4].GetIDString(), fakeImages[5].GetIDString()}
 
-		err := UpdateFieldImagesById(modelId, oldImageIds, cfg)
+		err := UpdateFieldImagesById(ctx, modelId, oldImageIds, cfg)
 		assert.Nil(err)
 
 		afterSave1Images := []ImageModel{}
@@ -104,7 +109,7 @@ func TestUpdateFieldImagesById_Multiple(t *testing.T) {
 		assert.Equal(oldImageIds[2], afterSave1Images[2].GetIDString())
 		assert.Equal(oldImageIds[3], afterSave1Images[3].GetIDString())
 
-		err = UpdateFieldImagesById(modelId, imageIds, cfg)
+		err = UpdateFieldImagesById(ctx, modelId, imageIds, cfg)
 		assert.Nil(err)
 
 		afterSave2Images := []ImageModel{}

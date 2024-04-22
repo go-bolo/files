@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"cloud.google.com/go/storage"
 	"github.com/go-bolo/bolo"
@@ -137,7 +138,20 @@ func (u *GCP) UploadFile(file files_dtos.FileDTO, tmpFilePath, destPath string) 
 }
 
 func (u *GCP) DestroyFile(file files_dtos.FileDTO) error {
-	// file.
+	urls := file.GetURLs()
+
+	if len(urls) == 0 {
+		return nil
+	}
+
+	for style, url := range urls {
+		if strings.Contains(url, "google") {
+			err := u.DeleteImageStyle(file, style, "")
+			if err != nil {
+				return fmt.Errorf("GCP.DestroyFile: DeleteImageStyle: %w", err)
+			}
+		}
+	}
 
 	return nil
 }

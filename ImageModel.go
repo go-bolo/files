@@ -432,18 +432,19 @@ func ImageCountReq(opts *ImageQueryOpts) error {
 		Count(opts.Count).Error
 }
 
-func UpdateFieldImagesByObjects(modelId string, images []*ImageModel, cfg FieldConfigurationInterface) error {
+func UpdateFieldImagesByObjects(ctx *bolo.RequestContext, modelId string, images []*ImageModel, cfg FieldConfigurationInterface) error {
 	imageIds := []string{}
 
 	for i := range images {
 		imageIds = append(imageIds, images[i].GetIDString())
 	}
 
-	return UpdateFieldImagesById(modelId, imageIds, cfg)
+	return UpdateFieldImagesById(ctx, modelId, imageIds, cfg)
 }
 
 // Update image field with support of multiple images
-func UpdateFieldImagesById(modelId string, imageIds []string, cfg FieldConfigurationInterface) error {
+func UpdateFieldImagesById(ctx *bolo.RequestContext, modelId string, imageIds []string, cfg FieldConfigurationInterface) error {
+	app := ctx.App
 	var savedImages []ImageModel
 	err := ImageFindManyInRecord(cfg.GetModelName(), cfg.GetFieldName(), modelId, &savedImages)
 	if err != nil {
@@ -480,7 +481,15 @@ func UpdateFieldImagesById(modelId string, imageIds []string, cfg FieldConfigura
 	}
 
 	if len(itemsToDelete) > 0 {
-
+		for _, id := range itemsToDelete {
+			err, _ = app.GetEvents().Trigger("images-to-delete-by-id", map[string]any{
+				"echoContext": ctx,
+				"id":          id,
+			})
+			if err != nil {
+				return errors.Wrap(err, "UpdateFieldImagesById error on trigger images-to-delete-by-id")
+			}
+		}
 	}
 
 	// delete old items

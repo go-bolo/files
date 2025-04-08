@@ -43,7 +43,10 @@ func (s *Local) GetUploadPathFromFile(imageStyle, format string, file files_dtos
 }
 
 func (s *Local) GetUrlFromFile(imageStyle string, file files_dtos.FileDTO) (string, error) {
-	appOrigin := s.App.GetConfiguration().Get("APP_ORIGIN")
+	appOrigin := s.App.GetConfiguration().GetF("IMAGES_API_URL", "")
+	if appOrigin == "" {
+		appOrigin = s.App.GetConfiguration().Get("APP_ORIGIN")
+	}
 
 	sufix, err := s.GetUploadPathFromFile(imageStyle, "", file)
 	if err != nil {

@@ -118,6 +118,12 @@ func NewFileFieldConfiguration(modelName, fieldName string) FieldConfigurationIn
 
 func BuidFileBaseURL(app bolo.App) string {
 	cfg := app.GetConfiguration()
+
+	imagesURL := cfg.GetF("IMAGES_API_URL", "")
+	if imagesURL != "" {
+		return imagesURL
+	}
+
 	port := cfg.GetF("PORT", "8080")
 	protocol := cfg.GetF("PROTOCOL", "http")
 	domain := cfg.GetF("DOMAIN", "localhost")

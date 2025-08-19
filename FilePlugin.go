@@ -24,8 +24,9 @@ type FilePlugin struct {
 
 	Processor files_processor.FileProcessor
 
-	ImageFormat string
-	ImageStyles map[string]ImageStyleCfg
+	ImageFormat         string
+	ImageFormatToIgnore string
+	ImageStyles         map[string]ImageStyleCfg
 }
 
 func (p *FilePlugin) GetName() string {
@@ -120,14 +121,15 @@ func (p *FilePlugin) GetMigrations() []*bolo.Migration {
 }
 
 type FilePluginCfgs struct {
-	Storages         map[string]Storager
-	ImageFormat      string
-	ImageStyles      map[string]ImageStyleCfg
-	FileStorageName  string
-	ImageStorageName string
-	MaxImageWidth    uint
-	MaxImageHeight   uint
-	Processor        files_processor.FileProcessor
+	Storages            map[string]Storager
+	ImageFormat         string
+	ImageFormatToIgnore string
+	ImageStyles         map[string]ImageStyleCfg
+	FileStorageName     string
+	ImageStorageName    string
+	MaxImageWidth       uint
+	MaxImageHeight      uint
+	Processor           files_processor.FileProcessor
 }
 
 type ImageStyleCfg struct {
@@ -137,14 +139,15 @@ type ImageStyleCfg struct {
 
 func NewPlugin(cfgs *FilePluginCfgs) *FilePlugin {
 	p := FilePlugin{
-		Name:             "files",
-		FileStorageName:  "local",
-		ImageStorageName: "local",
-		ImageFormat:      cfgs.ImageFormat,
-		ImageStyles:      cfgs.ImageStyles,
-		MaxImageWidth:    2560,
-		MaxImageHeight:   1700,
-		Processor:        cfgs.Processor,
+		Name:                "files",
+		FileStorageName:     "local",
+		ImageStorageName:    "local",
+		ImageFormat:         cfgs.ImageFormat,
+		ImageFormatToIgnore: cfgs.ImageFormatToIgnore,
+		ImageStyles:         cfgs.ImageStyles,
+		MaxImageWidth:       2560,
+		MaxImageHeight:      1700,
+		Processor:           cfgs.Processor,
 	}
 
 	if cfgs.Storages != nil {

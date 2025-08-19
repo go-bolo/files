@@ -74,7 +74,22 @@ func UploadImageFromLocalhost(fileName string, description string, filePath stri
 	fileUUID := uuid.New().String()
 	styles := filePlugin.ImageStyles
 
-	if filePlugin.ImageFormat != "" {
+	_, originalExtension, _ := files_helpers.GetFileExtensionAndMimeType(filePath)
+
+	// Check if original format should be ignored
+	shouldIgnoreFormat := false
+	if filePlugin.ImageFormatToIgnore != "" && originalExtension != "" {
+		ignoreFormats := strings.Split(filePlugin.ImageFormatToIgnore, ",")
+		for _, ignoreFormat := range ignoreFormats {
+			ignoreFormat = strings.TrimSpace(ignoreFormat)
+			if strings.EqualFold(originalExtension, ignoreFormat) {
+				shouldIgnoreFormat = true
+				break
+			}
+		}
+	}
+
+	if filePlugin.ImageFormat != "" && !shouldIgnoreFormat {
 		defaultExtension = filePlugin.ImageFormat
 		defaultMime = mime.TypeByExtension("." + filePlugin.ImageFormat)
 	}
@@ -91,8 +106,18 @@ func UploadImageFromLocalhost(fileName string, description string, filePath stri
 	record.Size = &size
 	record.Originalname = fileName
 	record.StorageName = storageName
-	record.Extension = &defaultExtension
-	record.Mime = &defaultMime
+
+	if shouldIgnoreFormat && originalExtension != "" {
+		record.Extension = &originalExtension
+		originalMime := mime.TypeByExtension("." + originalExtension)
+		if originalMime == "" {
+			originalMime = "application/octet-stream" // fallback
+		}
+		record.Mime = &originalMime
+	} else {
+		record.Extension = &defaultExtension
+		record.Mime = &defaultMime
+	}
 
 	var resizeOpts files_processor.Options
 
@@ -111,13 +136,21 @@ func UploadImageFromLocalhost(fileName string, description string, filePath stri
 		}
 	}
 
-	if filePlugin.ImageFormat != "" {
+	if filePlugin.ImageFormat != "" && !shouldIgnoreFormat {
 		record.Name = fileUUID + "." + filePlugin.ImageFormat
 		resizeOpts["format"] = filePlugin.ImageFormat
+	} else if shouldIgnoreFormat && originalExtension != "" {
+		record.Name = fileUUID + "." + originalExtension
+	} else {
+		record.Name = fileUUID
 	}
 
 	if resizeOpts["format"] == "" {
-		resizeOpts["format"] = defaultExtension
+		if shouldIgnoreFormat && originalExtension != "" {
+			resizeOpts["format"] = originalExtension
+		} else {
+			resizeOpts["format"] = defaultExtension
+		}
 	}
 
 	originalDest, _ := storage.GetUploadPathFromFile("original", filePlugin.ImageFormat, record)

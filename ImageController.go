@@ -310,36 +310,55 @@ func (ctl *ImageController) FindOne(c echo.Context) error {
 		}
 
 		if shouldReset {
-			url := record.URLs["original"]
-			originalPath := path.Join(os.TempDir(), record.Name) + "_original"
-			defer os.Remove(originalPath)
-
-			processor := filePlugin.Processor
-
-			tmpFilePath := path.Join(os.TempDir(), record.Name)
-
-			resizeOpts := files_processor.Options{
-				"width":  strconv.Itoa(styles[style].Width),
-				"height": strconv.Itoa(styles[style].Height),
-				"url":    url,
-				"format": filePlugin.ImageFormat,
+			// Check if the image format should be ignored (e.g., GIF, SVG)
+			shouldIgnoreFormat := false
+			if filePlugin.ImageFormatToIgnore != "" && record.Extension != nil {
+				ignoreFormats := strings.Split(filePlugin.ImageFormatToIgnore, ",")
+				for _, ignoreFormat := range ignoreFormats {
+					ignoreFormat = strings.TrimSpace(ignoreFormat)
+					if strings.EqualFold(*record.Extension, ignoreFormat) {
+						shouldIgnoreFormat = true
+						break
+					}
+				}
 			}
 
-			err = processor.Resize(originalPath, tmpFilePath, record.Name, resizeOpts)
-			if err != nil {
-				return err
+			// Skip processing for ignored formats to preserve their properties (e.g., GIF animation)
+			if shouldIgnoreFormat {
+				// For ignored formats, just use the original URL for all styles
+				record.URLs[style] = record.URLs["original"]
+			} else {
+				url := record.URLs["original"]
+				originalPath := path.Join(os.TempDir(), record.Name) + "_original"
+				defer os.Remove(originalPath)
+
+				processor := filePlugin.Processor
+
+				tmpFilePath := path.Join(os.TempDir(), record.Name)
+
+				resizeOpts := files_processor.Options{
+					"width":  strconv.Itoa(styles[style].Width),
+					"height": strconv.Itoa(styles[style].Height),
+					"url":    url,
+					"format": filePlugin.ImageFormat,
+				}
+
+				err = processor.Resize(originalPath, tmpFilePath, record.Name, resizeOpts)
+				if err != nil {
+					return err
+				}
+
+				dest, _ := storage.GetUploadPathFromFile(style, filePlugin.ImageFormat, &record)
+
+				err = storage.UploadFile(&record, tmpFilePath, dest)
+				if err != nil {
+					return errors.Wrap(err, "UploadImageFromLocalhost Error on upload file")
+				}
+
+				defer os.Remove(tmpFilePath)
+
+				record.URLs[style], _ = storage.GetUrlFromFile(style, &record)
 			}
-
-			dest, _ := storage.GetUploadPathFromFile(style, filePlugin.ImageFormat, &record)
-
-			err = storage.UploadFile(&record, tmpFilePath, dest)
-			if err != nil {
-				return errors.Wrap(err, "UploadImageFromLocalhost Error on upload file")
-			}
-
-			defer os.Remove(tmpFilePath)
-
-			record.URLs[style], _ = storage.GetUrlFromFile(style, &record)
 
 			record.SetURLs(record.URLs)
 			err = record.Save()
@@ -352,7 +371,19 @@ func (ctl *ImageController) FindOne(c echo.Context) error {
 	if ctl.UseExternalImageURL {
 		return c.Redirect(http.StatusFound, record.GetUrl(style))
 	} else {
-		return storage.SendFileThroughHTTP(c, &record, style, filePlugin.ImageFormat)
+		// For ignored formats, use the original extension instead of the configured format
+		formatToUse := filePlugin.ImageFormat
+		if filePlugin.ImageFormatToIgnore != "" && record.Extension != nil {
+			ignoreFormats := strings.Split(filePlugin.ImageFormatToIgnore, ",")
+			for _, ignoreFormat := range ignoreFormats {
+				ignoreFormat = strings.TrimSpace(ignoreFormat)
+				if strings.EqualFold(*record.Extension, ignoreFormat) {
+					formatToUse = *record.Extension
+					break
+				}
+			}
+		}
+		return storage.SendFileThroughHTTP(c, &record, style, formatToUse)
 	}
 }
 
